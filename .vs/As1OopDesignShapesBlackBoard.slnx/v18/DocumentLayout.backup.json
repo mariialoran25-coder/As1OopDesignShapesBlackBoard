@@ -14,7 +14,7 @@
       "DocumentGroups": [
         {
           "DockedHeight": 291,
-          "SelectedChildIndex": 5,
+          "SelectedChildIndex": 6,
           "Children": [
             {
               "$type": "Bookmark",
@@ -37,6 +37,10 @@
               "Name": "ST:128:0:{75188d03-9892-4ae2-abf1-207126247ce5}"
             },
             {
+              "$type": "Bookmark",
+              "Name": "ST:1:0:{d212f56b-c48a-434c-a121-1c5d80b59b9f}"
+            },
+            {
               "$type": "Document",
               "DocumentIndex": 0,
               "Title": "main.cpp",
@@ -44,14 +48,10 @@
               "RelativeDocumentMoniker": "As1OopDesignShapesBlackBoard\\main.cpp",
               "ToolTip": "C:\\2\u043A\u0443\u0440\u0441\u041F\u0440\u043E\u0433\u0440\u0430\u043C\u043D\u0430\u0406\u043D\u0436\u0435\u043D\u0435\u0440\u0456\u044FKSE\\CS440OopPracticesAndDesignElements\\As1OopDesignShapesBlackBoard\\As1OopDesignShapesBlackBoard\\main.cpp",
               "RelativeToolTip": "As1OopDesignShapesBlackBoard\\main.cpp",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAHIAAAAAAAAAAAAAAIQAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2026-09-16T19:57:35.082Z",
               "EditorCaption": ""
-            },
-            {
-              "$type": "Bookmark",
-              "Name": "ST:1:0:{d212f56b-c48a-434c-a121-1c5d80b59b9f}"
             }
           ]
         },

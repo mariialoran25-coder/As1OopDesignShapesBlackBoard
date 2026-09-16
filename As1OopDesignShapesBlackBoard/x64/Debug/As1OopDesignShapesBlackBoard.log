@@ -1,5 +1,2 @@
 ﻿  main.cpp
-C:\2курсПрограмнаІнженеріяKSE\CS440OopPracticesAndDesignElements\As1OopDesignShapesBlackBoard\As1OopDesignShapesBlackBoard\main.cpp(85,12): error C2039: 'drawTriangle': is not a member of 'Board'
-      C:\2курсПрограмнаІнженеріяKSE\CS440OopPracticesAndDesignElements\As1OopDesignShapesBlackBoard\As1OopDesignShapesBlackBoard\main.cpp(9,8):
-      see declaration of 'Board'
-  
+  As1OopDesignShapesBlackBoard.vcxproj -> C:\2курсПрограмнаІнженеріяKSE\CS440OopPracticesAndDesignElements\As1OopDesignShapesBlackBoard\x64\Debug\As1OopDesignShapesBlackBoard.exe
