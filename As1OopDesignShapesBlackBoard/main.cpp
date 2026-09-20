@@ -30,7 +30,7 @@ private:
 public:
     virtual ~Shape() {}
     virtual void draw(Board& board, int x, int y) =0 ;
-    virtual std::string printInfo() const = 0;
+    virtual std::string printList() const = 0;
 
 };
 
@@ -43,9 +43,10 @@ private:
 
 public :
     Triangle( int w, int h) : w_(w), h_(h){}
-    std::string printInfo() const override {
+    std::string printList() const override {
         return "[Triangle][" + std::to_string(w_) + "][" + std::to_string(h_) + "]\n";
     }
+
     void draw(Board& board, int x, int y) override
     {
         for (int i = 0; i < h_; ++i) {
@@ -69,9 +70,10 @@ private:
     int h_;
 public:
     Rectangle(int w, int h) : w_(w), h_(h){ }
-    std::string printInfo() const override {
+    std::string printList() const override {
         return "[Rectangle][" + std::to_string(w_) + "][" + std::to_string(h_) + "]\n";
     }
+
     void draw(Board& board, int x, int y) override
     {
         for (int i = 0; i < h_; ++i) {
@@ -91,7 +93,7 @@ private:
     int r_;
 public:
     Square(int r) : r_(r) {}
-    std::string printInfo() const override {
+    std::string printList() const override {
          return "[Square][" + std::to_string(r_) + "]\n";
     }
     void draw(Board& board, int x, int y) override
@@ -120,7 +122,7 @@ private:
     int r_;
 public:
     Diamond(int r): r_(r){}
-    std::string printInfo() const override {
+    std::string printList() const override {
         return "[Diamond][" + std::to_string(r_) + "]\n";
     }
     void fordraw(Board& board, int x, int y) 
@@ -161,7 +163,7 @@ private:
 
 public:
     Line(int length, bool isVertical) : length_(length), isVertical_(isVertical) {}
-    std::string printInfo() const override {
+    std::string printList() const override {
         return "[Line][" + std::to_string(length_) + "]\n";
     }
     void draw(Board& board, int x, int y) override
@@ -225,6 +227,7 @@ int main()
             //for (int i = 0; i < shapes.size();++i) {
             //    shapes[i]->draw(board,);
             //}
+
             triangle.draw(board, 8, 2);
             rectangle.draw(board, 20, 2);
             diamond.draw(board, 25, 8);
@@ -235,13 +238,19 @@ int main()
             break;
         }
         case 2: {
-            std::cout << "----Info----\n";
+            std::cout << "----List----\n";
             for (int i = 0; i < shapes.size(); ++i) {
-                std::cout << "["<< i + 1<<"]" << shapes[i]->printInfo() << "\n";
+                std::cout << "["<< i + 1<<"]" << shapes[i]->printList() << "\n";
             }
             break;
         }
         case 3: {
+            std::cout << "----Shapes----\n";
+            std::cout << "Triangle -- [width][height]\n";
+            std::cout << "Rectangle -- [width][height]\n";
+            std::cout << "Square -- [radius]\n";
+            std::cout << "Diamond -- [radius]\n";
+            std::cout << "Line -- [length][if line is Vertical - TRUE else FALSE]\n";
             break;
         }
               return 0;
