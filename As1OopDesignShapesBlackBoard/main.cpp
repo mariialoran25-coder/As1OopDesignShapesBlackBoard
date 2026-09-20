@@ -1,5 +1,8 @@
 #include <iostream>
+#include "string"
 #include <vector> 
+#include <sstream>
+#include <fstream>
 
 const int BOARD_WIDTH = 80;
 const int BOARD_HEIGHT = 25;
@@ -26,8 +29,9 @@ private:
     int id_shape = 0;
 public:
     virtual ~Shape() {}
-    virtual double area() const = 0;
     virtual void draw(Board& board, int x, int y) =0 ;
+    virtual std::string printInfo() const = 0;
+
 };
 
 
@@ -36,11 +40,11 @@ class Triangle : public Shape
 private:
     int w_;
     int h_;
+
 public :
-    Triangle(int w, int h) : w_(w), h_(h){}
-    double area() const override
-    {
-        return w_ * h_;
+    Triangle( int w, int h) : w_(w), h_(h){}
+    std::string printInfo() const override {
+        return "[Triangle][" + std::to_string(w_) + "][" + std::to_string(h_) + "]\n";
     }
     void draw(Board& board, int x, int y) override
     {
@@ -65,9 +69,8 @@ private:
     int h_;
 public:
     Rectangle(int w, int h) : w_(w), h_(h){ }
-    double area() const override
-    {
-        return w_ * h_;
+    std::string printInfo() const override {
+        return "[Rectangle][" + std::to_string(w_) + "][" + std::to_string(h_) + "]\n";
     }
     void draw(Board& board, int x, int y) override
     {
@@ -88,9 +91,8 @@ private:
     int r_;
 public:
     Square(int r) : r_(r) {}
-    double area() const override
-    {
-        return r_ * r_;
+    std::string printInfo() const override {
+         return "[Square][" + std::to_string(r_) + "]\n";
     }
     void draw(Board& board, int x, int y) override
     {
@@ -118,9 +120,8 @@ private:
     int r_;
 public:
     Diamond(int r): r_(r){}
-    double area() const override
-    {
-        return 3.14159 * r_ * r_;
+    std::string printInfo() const override {
+        return "[Diamond][" + std::to_string(r_) + "]\n";
     }
     void fordraw(Board& board, int x, int y) 
     {
@@ -160,9 +161,8 @@ private:
 
 public:
     Line(int length, bool isVertical) : length_(length), isVertical_(isVertical) {}
-    double area() const override
-    {
-        return length_;
+    std::string printInfo() const override {
+        return "[Line][" + std::to_string(length_) + "]\n";
     }
     void draw(Board& board, int x, int y) override
     {
@@ -181,48 +181,24 @@ public:
     }
 };
 
-
-
-void printArea(const Shape& s)
-{
-    std::cout << "area = " << s.area() << "\n";
-}
-
-//void listOfShapes(const Shape& s) 
-//{
-//    std::vector<Shape> tokens = lexer.tokenize();
-//        for (size_t i = 0; i < tokens.size();++i) {
-//            if (tokens[i].type != TokenType::EndOfFile) {
-//                std::cout << " Token: " << tokens[i].value << std::endl;
-//            }
-//        }
-//}
-
-
 int main()
 {
-
     Board board;
-    //відступ по х, відступ згори 
-    
-    Triangle triangle(1, 5);    
-    triangle.draw(board, 8, 2);
 
+    Triangle triangle(1, 5);
     Rectangle rectangle(8, 2);
-    rectangle.draw(board, 20, 2);
-
     Diamond diamond(5);
-    diamond.draw(board, 25, 8);
-
     Square square(5);
-    square.draw(board, 5, 10);
-
     Line line(5, true);
-    line.draw(board, 1, 1);
-
-    board.print();
 
 
+    std::vector<Shape*> shapes;
+    shapes.push_back(&triangle);
+    shapes.push_back(new Triangle( 1, 10));
+    shapes.push_back(&rectangle);
+    shapes.push_back(&diamond);
+    shapes.push_back(&square);
+    shapes.push_back(&line);
 
     int choice = -1;
     while (choice != 0) {
@@ -239,17 +215,30 @@ int main()
         std::cout << "10.clear (Remove all shapes from blackboard )\n";
         std::cout << "11.save (Save to the file)\n";
         std::cout << "12.load (Load to the file)\n";
-        std::cout << "Choose an action";
+        std::cout << "Choose an action: ";
         std::cin >> choice;
         std::cin.ignore();
 
 
         switch (choice) {
         case 1: {
+            //for (int i = 0; i < shapes.size();++i) {
+            //    shapes[i]->draw(board,);
+            //}
+            triangle.draw(board, 8, 2);
+            rectangle.draw(board, 20, 2);
+            diamond.draw(board, 25, 8);
+            square.draw(board, 5, 10);
+            line.draw(board, 1, 1);
+
             board.print();
             break;
         }
         case 2: {
+            std::cout << "----Info----\n";
+            for (int i = 0; i < shapes.size(); ++i) {
+                std::cout << "["<< i + 1<<"]" << shapes[i]->printInfo() << "\n";
+            }
             break;
         }
         case 3: {
@@ -259,47 +248,3 @@ int main()
         };
     }
 }
-//
-//
-//class Circle : public Shape
-//{
-//private:
-//    int r_;
-//public:
-//    Circle(int r) : r_(r) {}
-//    double area() const override
-//    {
-//        return 3.14159 * r_ * r_;
-//    }
-//    void fordraw(Board& board, int x, int y)
-//    {
-//        for (int i = 0; i <= r_; ++i) {
-//            int Stars = 2 * i + 1;
-//            int upcircle = x - i;
-//            for (int j = 0; j < Stars; ++j) {
-//                int positionUp = upcircle + j;
-//                if (positionUp >= 0 && positionUp < BOARD_WIDTH && (y + i) <
-//                    BOARD_HEIGHT && (y + i) >= 0)
-//                    board.grid[y - r_ + i][positionUp] = '*';
-//            }
-//        }
-//    }
-//    void draw(Board& board, int x, int y)override
-//    {
-//        fordraw(board, x, y);
-//        for (int i = 0; i <= r_; ++i) {
-//            int Stars = 2 * (r_ - 1 - i) + 1;
-//            int downcircle = x - (Stars / 2);
-//            for (int j = 0; j < Stars; ++j) {
-//                int positionUp = downcircle + j;
-//                if (positionUp >= 0 && positionUp < BOARD_WIDTH && (y + i) <
-//                    BOARD_HEIGHT && (y + i) >= 0)
-//                    board.grid[y + 1][positionUp] = '*';
-//            }
-//        }
-//    }
-//
-//};
-
-//Circle circle(4);
-//circle.draw(board, 10, 5);
