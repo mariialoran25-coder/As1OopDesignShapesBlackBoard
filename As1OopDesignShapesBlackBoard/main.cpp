@@ -21,6 +21,7 @@ public:
             std::cout << "\n";
         }
     }
+
 };
 
 class Shape
@@ -29,8 +30,10 @@ private:
     int id_shape = 0;
 public:
     virtual ~Shape() {}
-    virtual void draw(Board& board, int x, int y) =0 ;
+    virtual std::string getName() const = 0;
+    virtual void draw(Board& board) =0 ;
     virtual std::string printList() const = 0;
+    virtual void framedraw(Board& board) = 0;
 
 };
 
@@ -40,26 +43,52 @@ class Triangle : public Shape
 private:
     int w_;
     int h_;
+    int x,y;
+    std::string mode_;
+    std::string color_;
 
 public :
-    Triangle( int w, int h) : w_(w), h_(h){}
+    Triangle(int xx, int yy, int w, int h, std::string mode, std::string color) : w_(w), h_(h), x(xx), y(yy), mode_(mode), color_(color) {}
     std::string printList() const override {
-        return "[Triangle][" + std::to_string(w_) + "][" + std::to_string(h_) + "]\n";
+        return "[Triangle][X=" + std::to_string(x) + "][Y=" +std::to_string(y) + "][W=" + std::to_string(w_) + "][H=" + std::to_string(h_) + "]\n";
+    }
+    std::string getName() const override {
+        return "triangle";
     }
 
-    void draw(Board& board, int x, int y) override
-    {
+    void framedraw(Board& board) override {
         for (int i = 0; i < h_; ++i) {
             int numStars = 2 * i + 1;
-            int leftMost = x - i;
             for (int j = 0; j < numStars; ++j) {
-                int position = leftMost + j;
-                if (position >= 0 && position < BOARD_WIDTH && (y + i) <
-                    BOARD_HEIGHT && (y + i) >= 0)
-                    board.grid[y + i][position] = '*';
+                if (i == 0 || i == h_ - 1 || j == 0 || j == numStars - 1) {
+                    int position = x - i + j;
+                    if (position >= 0 && position < BOARD_WIDTH && (y + i) <
+                        BOARD_HEIGHT && (y + i) >= 0)
+                        board.grid[y + i][position] = '*';
+                }
             }
         }
     }
+
+    void draw(Board& board) override
+    {
+        if (mode_ == "fill") {
+            for (int i = 0; i < h_; ++i) {
+                int numStars = 2 * i + 1;
+                int leftMost = x - i;
+                for (int j = 0; j < numStars; ++j) {
+                    int position = leftMost + j;
+                    if (position >= 0 && position < BOARD_WIDTH && (y + i) <
+                        BOARD_HEIGHT && (y + i) >= 0)
+                        board.grid[y + i][position] = '*';
+                }
+            }
+        }
+        else {
+            framedraw(board);
+        }
+    }
+
 };
 
 
@@ -68,21 +97,45 @@ class Rectangle : public Shape
 private:
     int w_;
     int h_;
+    int x, y;
+    std::string mode_;
+    std::string color_;
 public:
-    Rectangle(int w, int h) : w_(w), h_(h){ }
+    Rectangle(int xx, int yy, int w, int h, std::string mode, std::string color) : w_(w), h_(h), x(xx), y(yy), mode_(mode), color_(color) { }
     std::string printList() const override {
-        return "[Rectangle][" + std::to_string(w_) + "][" + std::to_string(h_) + "]\n";
+        return "[Rectangle][X=" + std::to_string(x) + "][Y=" + std::to_string(y) + "]  [" + std::to_string(w_) + "][" + std::to_string(h_) + "]\n";
     }
-
-    void draw(Board& board, int x, int y) override
-    {
+    std::string getName() const override {
+        return "rectangle";
+    }
+    void framedraw(Board& board) override {
         for (int i = 0; i < h_; ++i) {
             for (int j = 0; j < w_; ++j) {
-                int position = x + j;
-                if (position >= 0 && position < BOARD_WIDTH && (y + i) <
-                    BOARD_HEIGHT && (y + i) >= 0)
-                    board.grid[y + i][position] = '*';
+                if (i == 0 || i == h_ - 1 || j == 0 || j == w_ - 1) {
+                    int position = x + j;
+                    if (position >= 0 && position < BOARD_WIDTH && (y + i) <
+                        BOARD_HEIGHT && (y + i) >= 0)
+                        board.grid[y + i][position] = '*';
+                }
             }
+        }
+    }
+
+
+    void draw(Board& board) override
+    {
+        if (mode_ == "fill") {
+            for (int i = 0; i < h_; ++i) {
+                for (int j = 0; j < w_; ++j) {
+                    int position = x + j;
+                    if (position >= 0 && position < BOARD_WIDTH && (y + i) <
+                        BOARD_HEIGHT && (y + i) >= 0)
+                        board.grid[y + i][position] = '*';
+                }
+            }
+        }
+        else {
+            framedraw(board);
         }
     }
 };
@@ -91,25 +144,53 @@ class Square : public Shape
 {
 private:
     int r_;
+    int x, y;
+    std::string mode_;
+    std::string color_;
 public:
-    Square(int r) : r_(r) {}
+    Square(int xx, int yy, int r, std::string mode, std::string color) : r_(r), x(xx), y(yy), mode_(mode), color_(color) {}
     std::string printList() const override {
-         return "[Square][" + std::to_string(r_) + "]\n";
+         return "[Square][X=" + std::to_string(x) + "][Y=" + std::to_string(y) + "]  [" + std::to_string(r_) + "]\n";
     }
-    void draw(Board& board, int x, int y) override
-    {
+    std::string getName() const override {
+        return "square";
+    }
+    void framedraw(Board& board) override {
         for (int i = 0; i < r_; ++i) {
-            for (int j = 0; j < r_*2; ++j) {
-                int position = x + j;
-                if (position >= 0 && position < BOARD_WIDTH && (y + i) <
-                    BOARD_HEIGHT && (y + i) >= 0)
-                    if (j % 2 == 0) {
-                        board.grid[y + i][position] = '*';
-                    }
-                    else {
-                        board.grid[y + i][position] = ' ';
-                    }
+            for (int j = 0; j < r_ * 2; ++j) {
+                if (i == 0 || i == r_ - 1 || j == 0 || j == r_ * 2 - 2) {
+                    int position = x + j;
+                    if (position >= 0 && position < BOARD_WIDTH && (y + i) <
+                        BOARD_HEIGHT && (y + i) >= 0)
+                        if (j % 2 == 0) {
+                            board.grid[y + i][position] = '*';
+                        }
+                        else {
+                            board.grid[y + i][position] = ' ';
+                        }
+                }
             }
+        }
+    }
+    void draw(Board& board) override
+    {
+        if (mode_ == "fill") {
+            for (int i = 0; i < r_; ++i) {
+                for (int j = 0; j < r_ * 2; ++j) {
+                    int position = x + j;
+                    if (position >= 0 && position < BOARD_WIDTH && (y + i) <
+                        BOARD_HEIGHT && (y + i) >= 0)
+                        if (j % 2 == 0) {
+                            board.grid[y + i][position] = '*';
+                        }
+                        else {
+                            board.grid[y + i][position] = ' ';
+                        }
+                }
+            }
+        }
+        else {
+            framedraw(board);
         }
     }
 };
@@ -120,36 +201,69 @@ class Diamond : public Shape
 {
 private:
     int r_;
+    int x, y;
+    std::string mode_;
+    std::string color_;
 public:
-    Diamond(int r): r_(r){}
+    Diamond(int xx, int yy, int r, std::string mode, std::string color) : r_(r), x(xx), y(yy), mode_(mode), color_(color) {}
     std::string printList() const override {
-        return "[Diamond][" + std::to_string(r_) + "]\n";
+        return "[Diamond][X=" + std::to_string(x) + "][Y=" + std::to_string(y) + "]  [" + std::to_string(r_) + "]\n";
     }
-    void fordraw(Board& board, int x, int y) 
-    {
+    std::string getName() const override {
+        return "diamond";
+    }
+    void framedraw(Board& board) override {
         for (int i = 0; i < r_; ++i) {
             int Stars = 2 * i + 1;
             int upcircle = x - i;
             for (int j = 0; j < Stars; ++j) {
-                int positionUp = upcircle + j;
-                if (positionUp >= 0 && positionUp < BOARD_WIDTH && (y + i) <
-                    BOARD_HEIGHT && (y + i) >= 0)
-                    board.grid[y+ i][positionUp] = '*';
+                if (i == 0 || i == r_ - 1 || j == 0 || j == Stars - 1) {
+                    int positionUp = upcircle + j;
+                    if (positionUp >= 0 && positionUp < BOARD_WIDTH && (y + i) <
+                        BOARD_HEIGHT && (y + i) >= 0)
+                        board.grid[y + i][positionUp] = '*';
+                }
+            }
+        }
+        for (int i = 1; i < r_; ++i) {
+            int Stars = 2 * (r_ - 1 - i) + 1;
+            int downcircle = x - (r_ - 1 - i);
+            for (int j = 0; j < Stars; ++j) {
+                if (i == 0 || i == r_ - 1 || j == 0 || j == Stars - 1) {
+                    int position = downcircle + j;
+                    if (position >= 0 && position < BOARD_WIDTH && (y + i) <
+                        BOARD_HEIGHT && (y + i) >= 0)
+                        board.grid[y + r_ + (i - 1)][position] = '*';
+                }
             }
         }
     }
-    void draw(Board& board, int x, int y)override
+    void draw(Board& board)override
     {
-        fordraw(board,x,y);
-        for (int i = 1; i <= r_; ++i) {
-            int Stars = 2 * (r_ -1- i) + 1;
-            int downcircle = x - (r_-1 - i);
-            for (int j = 0; j < Stars; ++j) {
-                int positionUp = downcircle + j;
-                if (positionUp >= 0 && positionUp < BOARD_WIDTH && (y + i) <
-                    BOARD_HEIGHT && (y + i) >= 0)
-                    board.grid[y +r_+(i-1)][positionUp] = '*';
+        if (mode_ == "fill") {
+            for (int i = 0; i < r_; ++i) {
+                int Stars = 2 * i + 1;
+                int upcircle = x - i;
+                for (int j = 0; j < Stars; ++j) {
+                    int positionUp = upcircle + j;
+                    if (positionUp >= 0 && positionUp < BOARD_WIDTH && (y + i) <
+                        BOARD_HEIGHT && (y + i) >= 0)
+                        board.grid[y + i][positionUp] = '*';
+                }
             }
+            for (int i = 1; i <= r_; ++i) {
+                int Stars = 2 * (r_ - 1 - i) + 1;
+                int downcircle = x - (r_ - 1 - i);
+                for (int j = 0; j < Stars; ++j) {
+                    int positionUp = downcircle + j;
+                    if (positionUp >= 0 && positionUp < BOARD_WIDTH && (y + i) <
+                        BOARD_HEIGHT && (y + i) >= 0)
+                        board.grid[y + r_ + (i - 1)][positionUp] = '*';
+                }
+            }
+        }
+        else {
+            framedraw(board);
         }
     }
 };
@@ -160,13 +274,22 @@ class Line :public Shape
 private:
     int length_;
     bool isVertical_;
+    int x, y;
+    std::string mode_;
+    std::string color_;
 
 public:
-    Line(int length, bool isVertical) : length_(length), isVertical_(isVertical) {}
+    Line(int xx, int yy, int length, bool isVertical, std::string mode, std::string color) : length_(length), isVertical_(isVertical), x(xx), y(yy), mode_(mode), color_(color) {}
     std::string printList() const override {
-        return "[Line][" + std::to_string(length_) + "]\n";
+        return "[Line][X=" + std::to_string(x) + "][Y=" + std::to_string(y) + "]  [" + std::to_string(length_) + "]\n";
     }
-    void draw(Board& board, int x, int y) override
+    std::string getName() const override {
+        return "line";
+    }
+    void framedraw(Board& board) override {
+        draw(board);
+    }
+    void draw(Board& board) override
     {
         for (int i = 0; i < length_; ++i) {
             int current_x = x;
@@ -186,17 +309,16 @@ public:
 int main()
 {
     Board board;
-
-    Triangle triangle(1, 5);
-    Rectangle rectangle(8, 2);
-    Diamond diamond(5);
-    Square square(5);
-    Line line(5, true);
+    // x y w h
+    Triangle triangle(8, 2, 1, 5, "fill", "pink");
+    Rectangle rectangle(20, 2, 9, 4, "fill", "pink");
+    Diamond diamond(25, 8, 5, "fill", "pink");
+    Square square( 5, 10,5, "fill", "pink");
+    Line line(1, 1, 5, true, "fill", "pink");
 
 
     std::vector<Shape*> shapes;
     shapes.push_back(&triangle);
-    shapes.push_back(new Triangle( 1, 10));
     shapes.push_back(&rectangle);
     shapes.push_back(&diamond);
     shapes.push_back(&square);
@@ -224,15 +346,16 @@ int main()
 
         switch (choice) {
         case 1: {
-            //for (int i = 0; i < shapes.size();++i) {
-            //    shapes[i]->draw(board,);
-            //}
+            for (int i = 0; i < shapes.size();++i) {
+                shapes[i]->draw(board);
+            }
+           
 
-            triangle.draw(board, 8, 2);
-            rectangle.draw(board, 20, 2);
-            diamond.draw(board, 25, 8);
-            square.draw(board, 5, 10);
-            line.draw(board, 1, 1);
+            //triangle.draw(board);
+            //rectangle.draw(board);
+            //diamond.draw(board);
+            //square.draw(board);
+            //line.draw(board);
 
             board.print();
             break;
@@ -246,14 +369,71 @@ int main()
         }
         case 3: {
             std::cout << "----Shapes----\n";
-            std::cout << "Triangle -- [width][height]\n";
-            std::cout << "Rectangle -- [width][height]\n";
-            std::cout << "Square -- [radius]\n";
-            std::cout << "Diamond -- [radius]\n";
-            std::cout << "Line -- [length][if line is Vertical - TRUE else FALSE]\n";
+            std::cout << "Triangle -- [x][y][width][height]\n";
+            std::cout << "Rectangle -- [x][y][width][height]\n";
+            std::cout << "Square -- [x][y][radius]\n";
+            std::cout << "Diamond -- [x][y][radius]\n";
+            std::cout << "Line -- [x][y][length][if line is Vertical - TRUE else FALSE]\n";
             break;
         }
-              return 0;
+        case 4 : {
+            std::string formShape;
+            std::string fillOrFrame;
+            std::string color;
+            int px, py;
+            int pa , pb;
+            std::cout << "----ADD----\n";
+            std::cout << "Enter Shape: ";
+            std::cin >> formShape;
+            
+            std::cout << "Enter Fill or Frame: ";
+            std::cin >> fillOrFrame;
+
+            std::cout << "Enter Color: ";
+            std::cin >> color;
+
+            std::cout << "Enter Location ('number1 x' 'num2 y'): ";
+            std::cin >> px >> py;
+
+            std::cout << "Enter Parameters : ";
+            std::cin >> pa >> pb;
+
+            std::cout << "Your Choice: [" << formShape << "][" << fillOrFrame << "][" << color << "][" << pa <<"  "<< pb << "]\n";
+            
+            
+            if (formShape == "triangle") {
+                shapes.push_back(new Triangle(px,py,pa,pb,fillOrFrame, color) );
+            }
+            if (formShape == "rectangle") {
+                shapes.push_back(new Rectangle(px, py, pa, pb, fillOrFrame, color));
+            }
+            if (formShape == "square") {
+                shapes.push_back(new Square(px, py, pa, fillOrFrame, color));
+            }
+            if (formShape == "diamond") {
+                shapes.push_back(new Diamond(px, py, pa, fillOrFrame, color));
+            }
+            if (formShape == "line") {
+                shapes.push_back(new Line(px, py, pa ,true, fillOrFrame, color));
+            }
+
+            break;
+
+        }
+        case 5: {
+            for (int i = 0; i < shapes.size();++i) {
+                shapes[i]->framedraw(board);
+            }
+            board.print();
+            break;
+        }
+        case 10: {
+            //shapes.clear();
+            board = Board();
+            std::cout << "Board is clear\n";
+            break;
+        }
+               return 0;
         };
     }
 }
