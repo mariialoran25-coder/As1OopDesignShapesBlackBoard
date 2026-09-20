@@ -12,16 +12,14 @@ class Board {
 public:
     std::vector<std::vector<char>> grid;
     Board() : grid(BOARD_HEIGHT, std::vector<char>(BOARD_WIDTH, ' ')) {}
-
     void print() {
-        for (auto& row : grid) {
-            for (char c : row) {
-                std::cout << c;
+        for (int i = 0; i < BOARD_HEIGHT; ++i) {
+            for (int j = 0; j < BOARD_WIDTH; ++j) {
+                std::cout << grid[i][j];
             }
             std::cout << "\n";
         }
     }
-
 };
 
 class Shape
@@ -34,6 +32,7 @@ public:
     virtual void draw(Board& board) =0 ;
     virtual std::string printList() const = 0;
     virtual void framedraw(Board& board) = 0;
+    virtual bool contains(int px, int py)=0;
 
 };
 
@@ -55,8 +54,8 @@ public :
     std::string getName() const override {
         return "triangle";
     }
-
     void framedraw(Board& board) override {
+
         for (int i = 0; i < h_; ++i) {
             int numStars = 2 * i + 1;
             for (int j = 0; j < numStars; ++j) {
@@ -64,12 +63,11 @@ public :
                     int position = x - i + j;
                     if (position >= 0 && position < BOARD_WIDTH && (y + i) <
                         BOARD_HEIGHT && (y + i) >= 0)
-                        board.grid[y + i][position] = '*';
+                        board.grid[y + i][position] = '&';
                 }
             }
         }
     }
-
     void draw(Board& board) override
     {
         if (mode_ == "fill") {
@@ -80,12 +78,24 @@ public :
                     int position = leftMost + j;
                     if (position >= 0 && position < BOARD_WIDTH && (y + i) <
                         BOARD_HEIGHT && (y + i) >= 0)
-                        board.grid[y + i][position] = '*';
+                        board.grid[y + i][position] = '&';
                 }
             }
         }
         else {
             framedraw(board);
+        }
+    }
+    bool contains(int px, int py)  override {
+        if (px < x || py < y || px >= (x - h_)+2*h_+1 || py >= y + h_) {
+            return false;
+        }
+
+        if (mode_ == "fill") {
+            return true;
+        }
+        else if (py == y || py == y + (h_ - 1) || px == x || px == x - h_ + (2 * h_ + 1)) {
+            return true;
         }
     }
 
@@ -115,13 +125,11 @@ public:
                     int position = x + j;
                     if (position >= 0 && position < BOARD_WIDTH && (y + i) <
                         BOARD_HEIGHT && (y + i) >= 0)
-                        board.grid[y + i][position] = '*';
+                        board.grid[y + i][position] = '=';
                 }
             }
         }
     }
-
-
     void draw(Board& board) override
     {
         if (mode_ == "fill") {
@@ -130,12 +138,24 @@ public:
                     int position = x + j;
                     if (position >= 0 && position < BOARD_WIDTH && (y + i) <
                         BOARD_HEIGHT && (y + i) >= 0)
-                        board.grid[y + i][position] = '*';
+                        board.grid[y + i][position] = '=';
                 }
             }
         }
         else {
             framedraw(board);
+        }
+    }
+    bool contains(int px, int py)  override {
+        if (px < x || py < y || px >= x + w_ || py >= y + h_) {
+            return false;
+        }
+
+        if (mode_ == "fill") {
+            return true;
+        }
+        else if (py == y || py == y + h_ -1 || px == x || px == x + w_ - 1) {
+            return true;
         }
     }
 };
@@ -163,7 +183,7 @@ public:
                     if (position >= 0 && position < BOARD_WIDTH && (y + i) <
                         BOARD_HEIGHT && (y + i) >= 0)
                         if (j % 2 == 0) {
-                            board.grid[y + i][position] = '*';
+                            board.grid[y + i][position] = '#';
                         }
                         else {
                             board.grid[y + i][position] = ' ';
@@ -181,7 +201,7 @@ public:
                     if (position >= 0 && position < BOARD_WIDTH && (y + i) <
                         BOARD_HEIGHT && (y + i) >= 0)
                         if (j % 2 == 0) {
-                            board.grid[y + i][position] = '*';
+                            board.grid[y + i][position] = '#';
                         }
                         else {
                             board.grid[y + i][position] = ' ';
@@ -192,6 +212,19 @@ public:
         else {
             framedraw(board);
         }
+    }
+    bool contains(int px, int py)  override {
+        if (px < x || py < y || px >= x + (r_ * 2) || py >= y + r_) {
+            return false;
+        }
+
+        if ((px -x ) % 2 != 0) {
+            return false;
+        }
+        if (mode_ == "fill") {
+            return true;
+        }
+        return (py == y || py == y + r_ - 1 || px == x || px == x + r_ * 2 - 2);
     }
 };
 
@@ -237,8 +270,8 @@ public:
                 }
             }
         }
-    }
-    void draw(Board& board)override
+    };
+    void draw(Board& board) override
     {
         if (mode_ == "fill") {
             for (int i = 0; i < r_; ++i) {
@@ -265,6 +298,17 @@ public:
         else {
             framedraw(board);
         }
+    }
+    bool contains(int px, int py)  override {
+        if (px<x || py<y || px >= x-r_+(2*r_+1) || py>=y+r_ || px >=x-(r_-1-r_)+(2*(r_-1-r_+1)) || py>=y+r_+(r_-1)) {
+            return false;
+        }
+        if (mode_ == "fill") {
+            return true;
+        }
+        else if (py==y||py>=y+(r_-1) || px==x || px>=x-r_+(2*r_+1)-1 || px>=x-(r_-1-r_)+(2*(r_- 1-r_)+1)-1 || py>=y+r_+(r_-1)) {
+        }
+        return true;
     }
 };
 
@@ -301,8 +345,22 @@ public:
                 current_x = x + i;
             }
             if (current_x >= 0 && current_x < BOARD_WIDTH && current_y >= 0 && current_y < BOARD_HEIGHT)
-                board.grid[current_y][current_x] = '*';
+                if (isVertical_) {
+                    board.grid[current_y][current_x] = '|';
+                }
+                else {
+                    board.grid[current_y][current_x] = '-';
+                }
         }
+    }
+    bool contains(int px, int py)  override {
+        if (isVertical_) {
+            return (px == x && py >= y && py < y + length_);
+        }
+        else {
+            return (py == y && px >= x && px < x+length_ );
+        }
+        
     }
 };
 
@@ -349,14 +407,6 @@ int main()
             for (int i = 0; i < shapes.size();++i) {
                 shapes[i]->draw(board);
             }
-           
-
-            //triangle.draw(board);
-            //rectangle.draw(board);
-            //diamond.draw(board);
-            //square.draw(board);
-            //line.draw(board);
-
             board.print();
             break;
         }
@@ -369,11 +419,11 @@ int main()
         }
         case 3: {
             std::cout << "----Shapes----\n";
-            std::cout << "Triangle -- [x][y][width][height]\n";
-            std::cout << "Rectangle -- [x][y][width][height]\n";
-            std::cout << "Square -- [x][y][radius]\n";
-            std::cout << "Diamond -- [x][y][radius]\n";
-            std::cout << "Line -- [x][y][length][if line is Vertical - TRUE else FALSE]\n";
+            std::cout << "Triangle -- [x][y][width][height] [fill Or Frame][color]\n";
+            std::cout << "Rectangle -- [x][y][width][height] [fill Or Frame][color]\n";
+            std::cout << "Square -- [x][y][radius] [fill Or Frame][color]\n";
+            std::cout << "Diamond -- [x][y][radius] [fill Or Frame][color]\n";
+            std::cout << "Line -- [x][y][length][if line is Vertical - TRUE else FALSE] [fill Or Frame][color]\n";
             break;
         }
         case 4 : {
@@ -416,17 +466,69 @@ int main()
             if (formShape == "line") {
                 shapes.push_back(new Line(px, py, pa ,true, fillOrFrame, color));
             }
-
             break;
-
         }
         case 5: {
+            std::cout << "----Select----\n";
+            std::cout << "1.Select by Id\n";
+            std::cout << "2.Select by coordinate\n";
+            std::cout << "Enter your option: \n";
+            int selectedType;
+            std::cin >> selectedType;
+
+            if (selectedType == 1) {
+                int id;
+                std::cout << "Enter ID ('number'): ";
+                std::cin >> id;
+
+                bool idFound = false;
+                for (int i = 0; i < shapes.size();++i) {
+                    if (i + 1 == id) {
+                        std::cout << "[" << (i + 1) << "]" << shapes[i]->printList();
+                        std::cout << "Shapes are found!\n";
+                        idFound = true;
+                        break;
+                    }
+                }
+                if (!idFound) {
+                    std::cout << "shape was not found";
+                }
+            }
+            else {
+
+                int px, py;
+                std::cout << "Enter coordinate to select ('x' and 'y'): ";
+                std::cin >> px >> py;
+
+                bool found = false;
+                for (int i = shapes.size() - 1; i >= 0; --i) {
+                    if (shapes[i]->contains(px, py)) {
+                        std::cout << shapes[i]->printList();
+                        std::cout << "Shapes are found!";
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    std::cout << "shape was not found";
+                }
+            }
+            break;
+        }
+        case 6: {
+            std::cout << "----Remove----\n";
+
+            break;
+        }
+        case 7: {
+            std::cout << "----Edit----\n";
             for (int i = 0; i < shapes.size();++i) {
                 shapes[i]->framedraw(board);
             }
             board.print();
             break;
         }
+
         case 10: {
             //shapes.clear();
             board = Board();
