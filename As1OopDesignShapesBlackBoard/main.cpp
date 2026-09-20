@@ -373,7 +373,7 @@ int main()
     Diamond diamond(25, 8, 5, "fill", "pink");
     Square square( 5, 10,5, "fill", "pink");
     Line line(1, 1, 5, true, "fill", "pink");
-
+    Shape* selectedShape = nullptr;
 
     std::vector<Shape*> shapes;
     shapes.push_back(&triangle);
@@ -485,6 +485,7 @@ int main()
                 for (int i = 0; i < shapes.size();++i) {
                     if (i + 1 == id) {
                         std::cout << "[" << (i + 1) << "]" << shapes[i]->printList();
+                        selectedShape = shapes[i];
                         std::cout << "Shapes are found!\n";
                         idFound = true;
                         break;
@@ -504,6 +505,7 @@ int main()
                 for (int i = shapes.size() - 1; i >= 0; --i) {
                     if (shapes[i]->contains(px, py)) {
                         std::cout << shapes[i]->printList();
+                        selectedShape = shapes[i];
                         std::cout << "Shapes are found!";
                         found = true;
                         break;
@@ -517,7 +519,23 @@ int main()
         }
         case 6: {
             std::cout << "----Remove----\n";
+            if (selectedShape == nullptr) {
+                std::cout << "No shape is selected";
+                break;
+            }
+            for (int i = 0; i < shapes.size();++i) {
+                if (shapes[i] == selectedShape) {
+                    shapes.erase(shapes.begin()+i);
+                    selectedShape = nullptr;
+                    std::cout << "Shape is removed";
 
+                    board = Board();
+                    for (int i = 0; i < shapes.size();++i) {
+                        shapes[i]->draw(board);
+                    }
+                    break;
+                }
+            }
             break;
         }
         case 7: {
