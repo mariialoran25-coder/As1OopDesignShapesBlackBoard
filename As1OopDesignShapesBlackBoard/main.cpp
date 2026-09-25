@@ -60,7 +60,7 @@ public:
     virtual void framedraw(Board& board) = 0;
     virtual bool contains(int px, int py)=0;
     virtual void updPrmtrs(int newWidth,int newHeight ) = 0;
-
+    virtual void updCoordinates(int newX, int newY) = 0;
     virtual void setColor(const std::string& newColor) = 0;
 
 
@@ -88,6 +88,10 @@ public :
     void updPrmtrs(int newWidth, int newHeight) override {
             w_ = newWidth;
             h_ = newHeight;
+    }
+    void updCoordinates(int newX, int newY) override {
+        x = newX;
+        y = newY;
     }
     void setColor(const std::string& newColor)override { color_ = newColor; }
 
@@ -162,6 +166,10 @@ public:
         w_ = newWidth;
         h_ = newHeight;
     }
+    void updCoordinates(int newX, int newY) override {
+        x = newX;
+        y = newY;
+    }
     void setColor(const std::string& newColor)override { color_ = newColor; }
     void framedraw(Board& board) override {
         for (int i = 0; i < h_; ++i) {
@@ -225,6 +233,10 @@ public:
     }
     void updPrmtrs(int newRadius, int none) override {
         r_ = newRadius;
+    }
+    void updCoordinates(int newX, int newY) override {
+        x = newX;
+        y = newY;
     }
     void setColor(const std::string& newColor)override { color_ = newColor; }
     void framedraw(Board& board) override {
@@ -305,6 +317,10 @@ public:
     }
     void updPrmtrs(int newr, int none) override {
         r_ = newr;
+    }
+    void updCoordinates(int newX, int newY) override {
+        x = newX;
+        y = newY;
     }
     void setColor(const std::string& newColor)override { color_ = newColor; }
     void framedraw(Board& board) override {
@@ -408,6 +424,10 @@ public:
     }
     void updPrmtrs(int newl, int none) override {
         length_ = newl;
+    }
+    void updCoordinates(int newX, int newY) override {
+        x = newX;
+        y = newY;
     }
     void setColor(const std::string& newColor)override { color_ = newColor; }
     void draw(Board& board) override
@@ -532,24 +552,7 @@ int main()
             std::cin >> pa >> pb;
 
             std::cout << "Your Choice: [" << formShape << "][" << fillOrFrame << "][" << color << "][" << pa <<"  "<< pb << "]\n";
-            
-            //size_t start = formShape.find('[');
-            //size_t end = formShape.find(']');
-
-            //if (start != std::string::npos && end != std::string::npos && end > start) {
-            //    size_t length = end - start - 1;
-            //    std::string NameOfShape = formShape.substr(start + 1, length);
-            //    std::cout << NameOfShape << std::endl;
-            //    for (int i = shapes.size() - 1; i >= 0; --i) {
-            //        if (shapes[i]->printList() == NameOfShape) {
-            //            if (NameOfShape != "Square" && NameOfShape != "Diamond") {
-            //                shapes.push_back(new )
-            //            }
-            //}
-
-            //for (int i = shapes.size() - 1; i >= 0; --i) {
-            //    if (shapes[i]->printList() == ) {
-            //
+           
             if (formShape == "triangle") {
                 shapes.push_back(new Triangle(px,py,pa,pb,fillOrFrame, color) );
             }
@@ -601,7 +604,7 @@ int main()
                 std::cin >> px >> py;
 
                 bool found = false;
-                for (size_t i = shapes.size() - 1; i >= 0; --i) {
+                for (int i = shapes.size() - 1; i >= 0; --i) {
                     if (shapes[i]->contains(px, py)) {
                         std::cout << shapes[i]->printList();
                         selectedShape = shapes[i];
@@ -630,9 +633,9 @@ int main()
                     std::cout << "Shape is removed";
 
                     board = Board();
-                    for (int i = 0; i < shapes.size();++i) {
-                        shapes[i]->draw(board);
-                    }
+                    //for (int i = 0; i < shapes.size();++i) {
+                    //    shapes[i]->draw(board);
+                    //}
                     break;
                 }
             }
@@ -677,8 +680,41 @@ int main()
             }
             break;
         }
+        case 9: {
+            std::cout << "----Move----\n";
+            if (selectedShape == nullptr) {
+                std::cout << "No shape is selected";
+                break;
+            }
+
+            for (int i = 0; i < shapes.size();++i) {
+                if (shapes[i] == selectedShape) {
+                    std::cout << "Enter new coordinates (x,y) : \n";
+                    int x, y;
+                    std::cin >> x >> y;
+                    if (x > BOARD_WIDTH || y > BOARD_HEIGHT) {
+                        std::cout << "error: shape will go out of the board";
+                    }
+                    selectedShape->updCoordinates(x, y);
+
+                    board = Board();
+                    for (int i = 0; i < shapes.size();++i) {
+                        shapes[i]->draw(board);
+                    }
+                   
+                    std::cout << "Coordinates of box changed";
+                    break;
+                }
+            }
+            break;
+        }
         case 10: {
-            //shapes.clear();
+            //for (int i = 0; i < shapes.size();++i) {
+            //    shapes.erase(shapes.begin() + i);
+            //    selectedShape = nullptr;
+            //}
+            shapes.clear();
+            selectedShape = nullptr;
             board = Board();
             std::cout << "Board is clear\n";
             break;
