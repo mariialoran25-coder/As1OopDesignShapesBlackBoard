@@ -54,7 +54,6 @@ private:
     int id_shape = 0;
 public:
     virtual ~Shape() {}
-    virtual std::string getName() const = 0;
     virtual void draw(Board& board) =0 ;
     virtual std::string printList() const = 0;
     virtual void framedraw(Board& board) = 0;
@@ -62,11 +61,9 @@ public:
     virtual void updPrmtrs(int newWidth,int newHeight ) = 0;
     virtual void updCoordinates(int newX, int newY) = 0;
     virtual void setColor(const std::string& newColor) = 0;
-
-
+    virtual std::string serialise() = 0;
 
 };
-
 
 class Triangle : public Shape
 {
@@ -80,10 +77,7 @@ private:
 public :
     Triangle(int xx, int yy, int w, int h, std::string mode, std::string color) : w_(w), h_(h), x(xx), y(yy), mode_(mode), color_(color) {}
     std::string printList() const override {
-        return "[Triangle][X=" + std::to_string(x) + "][Y=" +std::to_string(y) + "][W=" + std::to_string(w_) + "][H=" + std::to_string(h_) + "]\n";
-    }
-    std::string getName() const override {
-        return "triangle";
+        return "[Triangle][X=" + std::to_string(x) + "][Y=" +std::to_string(y) + "][W=" + std::to_string(w_) + "][H=" + std::to_string(h_) + "][" + mode_ + "][" + color_ +"]\n";
     }
     void updPrmtrs(int newWidth, int newHeight) override {
             w_ = newWidth;
@@ -94,7 +88,9 @@ public :
         y = newY;
     }
     void setColor(const std::string& newColor)override { color_ = newColor; }
-
+    std::string serialise() override {
+        return "triangle " + std::to_string(x) + " " + std::to_string(y) + " " + std::to_string(w_) + " " + std::to_string(h_) + " " + mode_ + " " + color_ + "\n";
+    }
     void framedraw(Board& board) override {
         for (int i = 0; i < h_; ++i) {
             int numStars = 2 * i + 1;
@@ -157,10 +153,7 @@ private:
 public:
     Rectangle(int xx, int yy, int w, int h, std::string mode, std::string color) : w_(w), h_(h), x(xx), y(yy), mode_(mode), color_(color) { }
     std::string printList() const override {
-        return "[Rectangle][X=" + std::to_string(x) + "][Y=" + std::to_string(y) + "]  [" + std::to_string(w_) + "][" + std::to_string(h_) + "]\n";
-    }
-    std::string getName() const override {
-        return "rectangle";
+        return "[Rectangle][X=" + std::to_string(x) + "][Y=" + std::to_string(y) + "]  [" + std::to_string(w_) + "][" + std::to_string(h_) + "][" + mode_ + "][" + color_ + "\n";
     }
     void updPrmtrs(int newWidth, int newHeight) override {
         w_ = newWidth;
@@ -171,6 +164,9 @@ public:
         y = newY;
     }
     void setColor(const std::string& newColor)override { color_ = newColor; }
+    std::string serialise() override {
+        return "rectangle " + std::to_string(x) + " " + std::to_string(y) + " " + std::to_string(w_) + " " + std::to_string(h_) + " " + mode_ + " " + color_ + "\n";
+    }
     void framedraw(Board& board) override {
         for (int i = 0; i < h_; ++i) {
             for (int j = 0; j < w_; ++j) {
@@ -226,10 +222,7 @@ private:
 public:
     Square(int xx, int yy, int r, std::string mode, std::string color) : r_(r), x(xx), y(yy), mode_(mode), color_(color) {}
     std::string printList() const override {
-         return "[Square][X=" + std::to_string(x) + "][Y=" + std::to_string(y) + "]  [" + std::to_string(r_) + "]\n";
-    }
-    std::string getName() const override {
-        return "square";
+         return "[Square][X=" + std::to_string(x) + "][Y=" + std::to_string(y) + "]  [" + std::to_string(r_) + "][" + mode_ + "][" + color_ + "\n";
     }
     void updPrmtrs(int newRadius, int none) override {
         r_ = newRadius;
@@ -239,6 +232,9 @@ public:
         y = newY;
     }
     void setColor(const std::string& newColor)override { color_ = newColor; }
+    std::string serialise() override {
+        return "square " + std::to_string(x) + " " + std::to_string(y) + " " + std::to_string(r_) + " " + mode_ + " " + color_ + "\n";
+    }
     void framedraw(Board& board) override {
         for (int i = 0; i < r_; ++i) {
             for (int j = 0; j < r_ * 2; ++j) {
@@ -267,12 +263,10 @@ public:
                     if (position >= 0 && position < BOARD_WIDTH && (y + i) <
                         BOARD_HEIGHT && (y + i) >= 0)
                         if (j % 2 == 0) {
-                           // board.grid[y + i][position] = '#';
                             board.grid[y + i][position].symbol = '#';
                             board.grid[y + i][position].color = color_;
                         }
                         else {
-                            //board.grid[y + i][position] = ' ';
                             board.grid[y + i][position].symbol = ' ';
                             board.grid[y + i][position].color = color_;
                         }
@@ -310,10 +304,7 @@ private:
 public:
     Diamond(int xx, int yy, int r, std::string mode, std::string color) : r_(r), x(xx), y(yy), mode_(mode), color_(color) {}
     std::string printList() const override {
-        return "[Diamond][X=" + std::to_string(x) + "][Y=" + std::to_string(y) + "]  [" + std::to_string(r_) + "]\n";
-    }
-    std::string getName() const override {
-        return "diamond";
+        return "[Diamond][X=" + std::to_string(x) + "][Y=" + std::to_string(y) + "]  [" + std::to_string(r_) + "][" + mode_ + "][" + color_ + "]\n";
     }
     void updPrmtrs(int newr, int none) override {
         r_ = newr;
@@ -323,6 +314,9 @@ public:
         y = newY;
     }
     void setColor(const std::string& newColor)override { color_ = newColor; }
+    std::string serialise() override {
+        return "diamond " + std::to_string(x) + " " + std::to_string(y) + " " + std::to_string(r_) + " " + mode_ + " " + color_ + "\n";
+    }
     void framedraw(Board& board) override {
         for (int i = 0; i < r_; ++i) {
             int Stars = 2 * i + 1;
@@ -332,7 +326,6 @@ public:
                     int positionUp = upcircle + j;
                     if (positionUp >= 0 && positionUp < BOARD_WIDTH && (y + i) <
                         BOARD_HEIGHT && (y + i) >= 0)
-                       // board.grid[y + i][positionUp] = '*';
                         board.grid[y + i][positionUp].symbol = '*';
                         board.grid[y + i][positionUp].color = color_;
                 }
@@ -346,7 +339,6 @@ public:
                     int position = downcircle + j;
                     if (position >= 0 && position < BOARD_WIDTH && (y + i) <
                         BOARD_HEIGHT && (y + i) >= 0)
-                      //  board.grid[y + r_ + (i - 1)][position] = '*';
                     board.grid[y + r_ + (i - 1)][position].symbol = '*';
                     board.grid[y + r_ + (i - 1)][position].color = color_;
                 }
@@ -363,7 +355,6 @@ public:
                     int positionUp = upcircle + j;
                     if (positionUp >= 0 && positionUp < BOARD_WIDTH && (y + i) <
                         BOARD_HEIGHT && (y + i) >= 0)
-                       // board.grid[y + i][positionUp] = '*';
                     board.grid[y +i][positionUp].symbol = '*';
                     board.grid[y + i][positionUp].color = color_;
 
@@ -377,7 +368,6 @@ public:
                     int positionUp = downcircle + j;
                     if (positionUp >= 0 && positionUp < BOARD_WIDTH && (y + i) <
                         BOARD_HEIGHT && (y + i) >= 0)
-                        //board.grid[y + r_ + (i - 1)][positionUp] = '*';
                         board.grid[y + r_ + (i - 1)][positionUp].symbol = '*';
                         board.grid[y + r_ + (i - 1)][positionUp].color = color_;
 
@@ -414,10 +404,7 @@ private:
 public:
     Line(int xx, int yy, int length, bool isVertical, std::string mode, std::string color) : length_(length), isVertical_(isVertical), x(xx), y(yy), mode_(mode), color_(color) {}
     std::string printList() const override {
-        return "[Line][X=" + std::to_string(x) + "][Y=" + std::to_string(y) + "]  [" + std::to_string(length_) + "]\n";
-    }
-    std::string getName() const override {
-        return "line";
+        return "[Line][X=" + std::to_string(x) + "][Y=" + std::to_string(y) + "]  [" + std::to_string(length_) + "][" + mode_ + "][" + color_ + "]\n";
     }
     void framedraw(Board& board) override {
         draw(board);
@@ -430,6 +417,9 @@ public:
         y = newY;
     }
     void setColor(const std::string& newColor)override { color_ = newColor; }
+    std::string serialise() override {
+        return "line " + std::to_string(x) + " " + std::to_string(y) + " " + std::to_string(length_) + " " + std::to_string(isVertical_) + " " + mode_ + " " + color_ + "\n";
+    }
     void draw(Board& board) override
     {
         for (int i = 0; i < length_; ++i) {
@@ -443,13 +433,11 @@ public:
             }
             if (current_x >= 0 && current_x < BOARD_WIDTH && current_y >= 0 && current_y < BOARD_HEIGHT)
                 if (isVertical_) {
-                   // board.grid[current_y][current_x] = '|';
                     board.grid[current_y][current_x].symbol = '|';
                     board.grid[current_y][current_x].color = color_;
 
                 }
                 else {
-                  //  board.grid[current_y][current_x] = '-';
                     board.grid[current_y][current_x].symbol = '-';
                     board.grid[current_y][current_x].color = color_;
                 }
@@ -466,15 +454,24 @@ public:
     }
 };
 
-int main()
-{
+Shape* createShape(std::string& name, int x, int y, int p1, int p2, std::string& mode, std::string& color) {
+    if (name == "triangle") return new Triangle(x, y, p1, p2, mode, color);
+    if (name == "rectangle") return new Rectangle(x, y, p1, p2, mode, color);
+    if (name == "square") return new Square(x, p1, p2, mode, color);
+    if (name == "diamond") return new Diamond(x, p1, p2, mode, color);
+    if (name == "line") return new Line(x, y, p1, true, mode, color);
+    return nullptr;
+}
+
+
+int main() {
     Board board;
 
     // x y w h
     Triangle triangle(8, 2, 1, 5, "fill", "");
     Rectangle rectangle(20, 2, 9, 4, "fill", "");
     Diamond diamond(25, 8, 5, "fill", "pink");
-    Square square( 5, 10,5, "fill", "pink");
+    Square square(5, 10, 5, "fill", "pink");
     Line line(1, 1, 5, true, "fill", "pink");
     Shape* selectedShape = nullptr;
 
@@ -516,7 +513,7 @@ int main()
         case 2: {
             std::cout << "----List----\n";
             for (int i = 0; i < shapes.size(); ++i) {
-                std::cout << "["<< i + 1<<"]" << shapes[i]->printList() << "\n";
+                std::cout << "[" << i + 1 << "]" << shapes[i]->printList() << "\n";
             }
             break;
         }
@@ -529,16 +526,16 @@ int main()
             std::cout << "Line -- [x][y][length][if line is Vertical - TRUE else FALSE] [fill Or Frame][color]\n";
             break;
         }
-        case 4 : {
+        case 4: {
             std::string formShape;
             std::string fillOrFrame;
             std::string color;
             int px, py;
-            int pa , pb;
+            int pa, pb;
             std::cout << "----ADD----\n";
             std::cout << "Enter Shape: ";
             std::cin >> formShape;
-            
+
             std::cout << "Enter Fill or Frame: ";
             std::cin >> fillOrFrame;
 
@@ -551,23 +548,17 @@ int main()
             std::cout << "Enter Parameters : ";
             std::cin >> pa >> pb;
 
-            std::cout << "Your Choice: [" << formShape << "][" << fillOrFrame << "][" << color << "][" << pa <<"  "<< pb << "]\n";
-           
-            if (formShape == "triangle") {
-                shapes.push_back(new Triangle(px,py,pa,pb,fillOrFrame, color) );
+            std::cout << "Your Choice: [" << formShape << "][" << fillOrFrame << "][" << color << "][" << pa << "  " << pb << "]\n";
+
+            Shape* newShape = createShape(formShape, px, py, pa, pb, fillOrFrame, color);
+            if (newShape != nullptr) {
+                shapes.push_back(newShape);
+                std::cout << "Shapes added";
             }
-            if (formShape == "rectangle") {
-                shapes.push_back(new Rectangle(px, py, pa, pb, fillOrFrame, color));
+            else {
+                std::cout << "Shapes added";
             }
-            if (formShape == "square") {
-                shapes.push_back(new Square(px, py, pa, fillOrFrame, color));
-            }
-            if (formShape == "diamond") {
-                shapes.push_back(new Diamond(px, py, pa, fillOrFrame, color));
-            }
-            if (formShape == "line") {
-                shapes.push_back(new Line(px, py, pa ,true, fillOrFrame, color));
-            }
+
             break;
         }
         case 5: {
@@ -625,17 +616,14 @@ int main()
                 std::cout << "No shape is selected";
                 break;
             }
-            
+
             for (int i = 0; i < shapes.size();++i) {
                 if (shapes[i] == selectedShape) {
-                    shapes.erase(shapes.begin()+i);
+                    shapes.erase(shapes.begin() + i);
                     selectedShape = nullptr;
                     std::cout << "Shape is removed";
 
                     board = Board();
-                    //for (int i = 0; i < shapes.size();++i) {
-                    //    shapes[i]->draw(board);
-                    //}
                     break;
                 }
             }
@@ -650,12 +638,12 @@ int main()
             for (int i = 0; i < shapes.size();++i) {
                 if (shapes[i] == selectedShape) {
                     std::cout << "Enter new parameters : \n";
-                    int a,b;
+                    int a, b;
                     std::cin >> a >> b;
                     if (a > BOARD_WIDTH || b > BOARD_HEIGHT) {
                         std::cout << "error: shape will go out of the board";
                     }
-                    selectedShape->updPrmtrs(a,b);
+                    selectedShape->updPrmtrs(a, b);
                     std::cout << "Size of box changed";
                     break;
                 }
@@ -696,12 +684,8 @@ int main()
                         std::cout << "error: shape will go out of the board";
                     }
                     selectedShape->updCoordinates(x, y);
-
                     board = Board();
-                    for (int i = 0; i < shapes.size();++i) {
-                        shapes[i]->draw(board);
-                    }
-                   
+
                     std::cout << "Coordinates of box changed";
                     break;
                 }
@@ -709,17 +693,90 @@ int main()
             break;
         }
         case 10: {
-            //for (int i = 0; i < shapes.size();++i) {
-            //    shapes.erase(shapes.begin() + i);
-            //    selectedShape = nullptr;
-            //}
+            std::cout << "----Clear----\n";
             shapes.clear();
             selectedShape = nullptr;
             board = Board();
             std::cout << "Board is clear\n";
             break;
         }
-               return 0;
-        };
+        case 11: {
+            std::cout << "----Save----\n";
+            std::string path;
+            std::cout << "Enter filename to save ";
+            std::getline(std::cin, path);
+
+            std::ofstream outFile(path, std::ios::binary);
+            if (outFile.is_open()) {
+                std::string serialised = "";
+                serialised += std::to_string(shapes.size()) + "\n";
+                for (int i = 0; i< shapes.size() ; ++i) {
+                    serialised += shapes[i]->serialise();
+                }
+                outFile.write(serialised.c_str(), serialised.size());
+                outFile.close();
+                std::cout << "[Success] Document saved\n";
+            }
+            else
+            {
+                std::cout << "[Error] File not opening \n";
+            }
+            break;
+        }
+        case 12: {
+            std::cout << "----Load----\n";
+            std::string path;
+            std::cout << "Enter filename to load ";
+            std::getline(std::cin, path);
+
+            std::ifstream inFile(path, std::ios::binary | std::ios::ate);
+            if (inFile.is_open()) {
+                std::streamsize size = inFile.tellg();
+                inFile.seekg(0, std::ios::beg);
+                std::vector<char> buffer(size);
+
+                if (inFile.read(buffer.data(), size)) {
+                    std::string data(buffer.data(), size);
+                    shapes.clear();
+                    selectedShape = nullptr;
+                    board = Board();
+
+                    std::stringstream ss(data);
+                    size_t count = 0;
+                    if (ss >> count) {
+                        for (size_t i = 0; i < count; ++i) {
+                            std::string shapeName;
+                            ss >> shapeName;
+                            int x=0, y=0, w = 0, h = 0;
+                            std::string mode, color;
+                            if (shapeName == "triangle" || shapeName == "rectangle") {
+                                ss >> x >> y >> w >> h >> mode >> color;
+                                shapes.push_back(createShape(shapeName, x, y, w, h, mode, color));
+                            }
+                            else if (shapeName == "square" || shapeName == "diamond") {
+                                ss >> x >> y >> w >> mode >> color;
+                                shapes.push_back(createShape(shapeName, x, y, w, 0,mode, color));
+                            }
+                            else if (shapeName == "line") {
+                                int len, isVert;
+                                ss >> x >> y >> len >> isVert >> mode >> color;
+                                shapes.push_back(new Line(x, y, len, isVert, mode, color));
+                            
+                            }
+                        }
+                    }
+                    for (int i = 0; i < shapes.size();++i) {
+                        shapes[i]->draw(board);
+                    }
+                    std::cout << " std::cout << [Success] Document loaded\n";
+                }
+                inFile.close();
+            }
+            else {
+                std::cout << "[Error] File not opening \n";
+            }
+            break;
+        }
+        }
     }
 }
