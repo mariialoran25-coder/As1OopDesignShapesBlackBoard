@@ -4,18 +4,44 @@
 #include <sstream>
 #include <fstream>
 
+class ColorCode {
+private:
+    struct ColorPair {
+        std::string name;
+        std::string code;
+    };
+public:
+    static std::string GetColorCode(const std::string& colorName) {
+        if (colorName == "red") return "\033[31m";
+        if (colorName == "blue")return "\033[34m";
+        if (colorName == "yellow") return "\033[33m";
+        if (colorName == "green") return "\033[32m";
+        if (colorName == "black") return "\033[30m";
+        if (colorName == "pink") return "\033[38;2;255;192;203m";
+        return "\033[0m";
+    }
+};
+
 const int BOARD_WIDTH = 80;
 const int BOARD_HEIGHT = 25;
 
+struct forBoard {
+    char symbol = ' ';
+    std::string color = "";
+};
  
 class Board {
 public:
-    std::vector<std::vector<char>> grid;
-    Board() : grid(BOARD_HEIGHT, std::vector<char>(BOARD_WIDTH, ' ')) {}
+    std::vector<std::vector<forBoard>> grid;
+    Board() : grid(BOARD_HEIGHT, std::vector<forBoard>(BOARD_WIDTH)) {}
     void print() {
         for (int i = 0; i < BOARD_HEIGHT; ++i) {
             for (int j = 0; j < BOARD_WIDTH; ++j) {
-                std::cout << grid[i][j];
+                if (!grid[i][j].color.empty()) {
+                    std::cout << ColorCode::GetColorCode(grid[i][j].color);
+                }
+                std::cout << grid[i][j].symbol;
+                std::cout << "\033[0m";
             }
             std::cout << "\n";
         }
@@ -33,6 +59,11 @@ public:
     virtual std::string printList() const = 0;
     virtual void framedraw(Board& board) = 0;
     virtual bool contains(int px, int py)=0;
+    virtual void updPrmtrs(int newWidth,int newHeight ) = 0;
+
+    virtual void setColor(const std::string& newColor) = 0;
+
+
 
 };
 
@@ -54,8 +85,13 @@ public :
     std::string getName() const override {
         return "triangle";
     }
-    void framedraw(Board& board) override {
+    void updPrmtrs(int newWidth, int newHeight) override {
+            w_ = newWidth;
+            h_ = newHeight;
+    }
+    void setColor(const std::string& newColor)override { color_ = newColor; }
 
+    void framedraw(Board& board) override {
         for (int i = 0; i < h_; ++i) {
             int numStars = 2 * i + 1;
             for (int j = 0; j < numStars; ++j) {
@@ -63,7 +99,8 @@ public :
                     int position = x - i + j;
                     if (position >= 0 && position < BOARD_WIDTH && (y + i) <
                         BOARD_HEIGHT && (y + i) >= 0)
-                        board.grid[y + i][position] = '&';
+                        board.grid[y + i][position].symbol = '#';
+                        board.grid[y + i][position].color = color_;
                 }
             }
         }
@@ -78,7 +115,10 @@ public :
                     int position = leftMost + j;
                     if (position >= 0 && position < BOARD_WIDTH && (y + i) <
                         BOARD_HEIGHT && (y + i) >= 0)
-                        board.grid[y + i][position] = '&';
+                        
+                        board.grid[y + i][position].symbol = '#';
+                        board.grid[y + i][position].color = color_;
+                        
                 }
             }
         }
@@ -118,6 +158,11 @@ public:
     std::string getName() const override {
         return "rectangle";
     }
+    void updPrmtrs(int newWidth, int newHeight) override {
+        w_ = newWidth;
+        h_ = newHeight;
+    }
+    void setColor(const std::string& newColor)override { color_ = newColor; }
     void framedraw(Board& board) override {
         for (int i = 0; i < h_; ++i) {
             for (int j = 0; j < w_; ++j) {
@@ -125,7 +170,9 @@ public:
                     int position = x + j;
                     if (position >= 0 && position < BOARD_WIDTH && (y + i) <
                         BOARD_HEIGHT && (y + i) >= 0)
-                        board.grid[y + i][position] = '=';
+                    
+                        board.grid[y + i][position].symbol = '=';
+                        board.grid[y + i][position].color = color_;
                 }
             }
         }
@@ -138,7 +185,8 @@ public:
                     int position = x + j;
                     if (position >= 0 && position < BOARD_WIDTH && (y + i) <
                         BOARD_HEIGHT && (y + i) >= 0)
-                        board.grid[y + i][position] = '=';
+                        board.grid[y + i][position].symbol = '=';
+                        board.grid[y + i][position].color = color_;
                 }
             }
         }
@@ -175,6 +223,10 @@ public:
     std::string getName() const override {
         return "square";
     }
+    void updPrmtrs(int newRadius, int none) override {
+        r_ = newRadius;
+    }
+    void setColor(const std::string& newColor)override { color_ = newColor; }
     void framedraw(Board& board) override {
         for (int i = 0; i < r_; ++i) {
             for (int j = 0; j < r_ * 2; ++j) {
@@ -183,10 +235,12 @@ public:
                     if (position >= 0 && position < BOARD_WIDTH && (y + i) <
                         BOARD_HEIGHT && (y + i) >= 0)
                         if (j % 2 == 0) {
-                            board.grid[y + i][position] = '#';
+                            board.grid[y + i][position].symbol = '*';
+                            board.grid[y + i][position].color = color_;
                         }
                         else {
-                            board.grid[y + i][position] = ' ';
+                            board.grid[y + i][position].symbol = ' ';
+                            //board.grid[y + i][position].color = color_;
                         }
                 }
             }
@@ -201,10 +255,14 @@ public:
                     if (position >= 0 && position < BOARD_WIDTH && (y + i) <
                         BOARD_HEIGHT && (y + i) >= 0)
                         if (j % 2 == 0) {
-                            board.grid[y + i][position] = '#';
+                           // board.grid[y + i][position] = '#';
+                            board.grid[y + i][position].symbol = '#';
+                            board.grid[y + i][position].color = color_;
                         }
                         else {
-                            board.grid[y + i][position] = ' ';
+                            //board.grid[y + i][position] = ' ';
+                            board.grid[y + i][position].symbol = ' ';
+                            board.grid[y + i][position].color = color_;
                         }
                 }
             }
@@ -245,6 +303,10 @@ public:
     std::string getName() const override {
         return "diamond";
     }
+    void updPrmtrs(int newr, int none) override {
+        r_ = newr;
+    }
+    void setColor(const std::string& newColor)override { color_ = newColor; }
     void framedraw(Board& board) override {
         for (int i = 0; i < r_; ++i) {
             int Stars = 2 * i + 1;
@@ -254,7 +316,9 @@ public:
                     int positionUp = upcircle + j;
                     if (positionUp >= 0 && positionUp < BOARD_WIDTH && (y + i) <
                         BOARD_HEIGHT && (y + i) >= 0)
-                        board.grid[y + i][positionUp] = '*';
+                       // board.grid[y + i][positionUp] = '*';
+                        board.grid[y + i][positionUp].symbol = '*';
+                        board.grid[y + i][positionUp].color = color_;
                 }
             }
         }
@@ -266,7 +330,9 @@ public:
                     int position = downcircle + j;
                     if (position >= 0 && position < BOARD_WIDTH && (y + i) <
                         BOARD_HEIGHT && (y + i) >= 0)
-                        board.grid[y + r_ + (i - 1)][position] = '*';
+                      //  board.grid[y + r_ + (i - 1)][position] = '*';
+                    board.grid[y + r_ + (i - 1)][position].symbol = '*';
+                    board.grid[y + r_ + (i - 1)][position].color = color_;
                 }
             }
         }
@@ -281,7 +347,11 @@ public:
                     int positionUp = upcircle + j;
                     if (positionUp >= 0 && positionUp < BOARD_WIDTH && (y + i) <
                         BOARD_HEIGHT && (y + i) >= 0)
-                        board.grid[y + i][positionUp] = '*';
+                       // board.grid[y + i][positionUp] = '*';
+                    board.grid[y +i][positionUp].symbol = '*';
+                    board.grid[y + i][positionUp].color = color_;
+
+
                 }
             }
             for (int i = 1; i <= r_; ++i) {
@@ -291,7 +361,10 @@ public:
                     int positionUp = downcircle + j;
                     if (positionUp >= 0 && positionUp < BOARD_WIDTH && (y + i) <
                         BOARD_HEIGHT && (y + i) >= 0)
-                        board.grid[y + r_ + (i - 1)][positionUp] = '*';
+                        //board.grid[y + r_ + (i - 1)][positionUp] = '*';
+                        board.grid[y + r_ + (i - 1)][positionUp].symbol = '*';
+                        board.grid[y + r_ + (i - 1)][positionUp].color = color_;
+
                 }
             }
         }
@@ -333,6 +406,10 @@ public:
     void framedraw(Board& board) override {
         draw(board);
     }
+    void updPrmtrs(int newl, int none) override {
+        length_ = newl;
+    }
+    void setColor(const std::string& newColor)override { color_ = newColor; }
     void draw(Board& board) override
     {
         for (int i = 0; i < length_; ++i) {
@@ -346,10 +423,15 @@ public:
             }
             if (current_x >= 0 && current_x < BOARD_WIDTH && current_y >= 0 && current_y < BOARD_HEIGHT)
                 if (isVertical_) {
-                    board.grid[current_y][current_x] = '|';
+                   // board.grid[current_y][current_x] = '|';
+                    board.grid[current_y][current_x].symbol = '|';
+                    board.grid[current_y][current_x].color = color_;
+
                 }
                 else {
-                    board.grid[current_y][current_x] = '-';
+                  //  board.grid[current_y][current_x] = '-';
+                    board.grid[current_y][current_x].symbol = '-';
+                    board.grid[current_y][current_x].color = color_;
                 }
         }
     }
@@ -367,9 +449,10 @@ public:
 int main()
 {
     Board board;
+
     // x y w h
-    Triangle triangle(8, 2, 1, 5, "fill", "pink");
-    Rectangle rectangle(20, 2, 9, 4, "fill", "pink");
+    Triangle triangle(8, 2, 1, 5, "fill", "");
+    Rectangle rectangle(20, 2, 9, 4, "fill", "");
     Diamond diamond(25, 8, 5, "fill", "pink");
     Square square( 5, 10,5, "fill", "pink");
     Line line(1, 1, 5, true, "fill", "pink");
@@ -450,7 +533,23 @@ int main()
 
             std::cout << "Your Choice: [" << formShape << "][" << fillOrFrame << "][" << color << "][" << pa <<"  "<< pb << "]\n";
             
-            
+            //size_t start = formShape.find('[');
+            //size_t end = formShape.find(']');
+
+            //if (start != std::string::npos && end != std::string::npos && end > start) {
+            //    size_t length = end - start - 1;
+            //    std::string NameOfShape = formShape.substr(start + 1, length);
+            //    std::cout << NameOfShape << std::endl;
+            //    for (int i = shapes.size() - 1; i >= 0; --i) {
+            //        if (shapes[i]->printList() == NameOfShape) {
+            //            if (NameOfShape != "Square" && NameOfShape != "Diamond") {
+            //                shapes.push_back(new )
+            //            }
+            //}
+
+            //for (int i = shapes.size() - 1; i >= 0; --i) {
+            //    if (shapes[i]->printList() == ) {
+            //
             if (formShape == "triangle") {
                 shapes.push_back(new Triangle(px,py,pa,pb,fillOrFrame, color) );
             }
@@ -502,7 +601,7 @@ int main()
                 std::cin >> px >> py;
 
                 bool found = false;
-                for (int i = shapes.size() - 1; i >= 0; --i) {
+                for (size_t i = shapes.size() - 1; i >= 0; --i) {
                     if (shapes[i]->contains(px, py)) {
                         std::cout << shapes[i]->printList();
                         selectedShape = shapes[i];
@@ -523,6 +622,7 @@ int main()
                 std::cout << "No shape is selected";
                 break;
             }
+            
             for (int i = 0; i < shapes.size();++i) {
                 if (shapes[i] == selectedShape) {
                     shapes.erase(shapes.begin()+i);
@@ -540,13 +640,43 @@ int main()
         }
         case 7: {
             std::cout << "----Edit----\n";
+            if (selectedShape == nullptr) {
+                std::cout << "No shape is selected";
+                break;
+            }
             for (int i = 0; i < shapes.size();++i) {
-                shapes[i]->framedraw(board);
+                if (shapes[i] == selectedShape) {
+                    std::cout << "Enter new parameters : \n";
+                    int a,b;
+                    std::cin >> a >> b;
+                    if (a > BOARD_WIDTH || b > BOARD_HEIGHT) {
+                        std::cout << "error: shape will go out of the board";
+                    }
+                    selectedShape->updPrmtrs(a,b);
+                    std::cout << "Size of box changed";
+                    break;
+                }
             }
             board.print();
             break;
         }
-
+        case 8: {
+            std::cout << "----Paint----\n";
+            if (selectedShape == nullptr) {
+                std::cout << "No shape is selected";
+                break;
+            }
+            for (int i = 0; i < shapes.size();++i) {
+                if (shapes[i] == selectedShape) {
+                    std::cout << "What color do you want? : \n";
+                    std::string color;
+                    std::cin >> color;
+                    selectedShape->setColor(color);
+                    std::cout << "Shape is painted \n";
+                }
+            }
+            break;
+        }
         case 10: {
             //shapes.clear();
             board = Board();
