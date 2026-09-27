@@ -31,9 +31,16 @@ struct forBoard {
 };
  
 class Board {
-public:
+private:
     std::vector<std::vector<forBoard>> grid;
+public:
     Board() : grid(BOARD_HEIGHT, std::vector<forBoard>(BOARD_WIDTH)) {}
+    void setSym(int x, int y, char symbol, const std::string& color) {
+        if (x >= 0 && x < BOARD_WIDTH && y >= 0 && y < BOARD_HEIGHT) {
+            grid[y][x].symbol = symbol;
+            grid[y][x].color = color;
+        }
+   }
     void print() {
         for (int i = 0; i < BOARD_HEIGHT; ++i) {
             for (int j = 0; j < BOARD_WIDTH; ++j) {
@@ -45,6 +52,13 @@ public:
             }
             std::cout << "\n";
         }
+    }
+
+    char getSym(int x, int y) const {
+        if (x >= 0 && x < BOARD_WIDTH && y >= 0 && y < BOARD_HEIGHT) {
+            return grid[y][x].symbol;
+        }
+        return ' ';
     }
 };
 
@@ -98,9 +112,11 @@ public :
                 if (i == 0 || i == h_ - 1 || j == 0 || j == numStars - 1) {
                     int position = x - i + j;
                     if (position >= 0 && position < BOARD_WIDTH && (y + i) <
-                        BOARD_HEIGHT && (y + i) >= 0)
-                        board.grid[y + i][position].symbol = '#';
-                        board.grid[y + i][position].color = color_;
+                        BOARD_HEIGHT && (y + i) >= 0) {
+                        board.setSym(position, y + i, '=', color_);
+                        //board.grid[y + i][position].symbol = '#';
+                        //board.grid[y + i][position].color = color_;
+                    }
                 }
             }
         }
@@ -114,11 +130,12 @@ public :
                 for (int j = 0; j < numStars; ++j) {
                     int position = leftMost + j;
                     if (position >= 0 && position < BOARD_WIDTH && (y + i) <
-                        BOARD_HEIGHT && (y + i) >= 0)
-                        
-                        board.grid[y + i][position].symbol = '#';
-                        board.grid[y + i][position].color = color_;
-                        
+                        BOARD_HEIGHT && (y + i) >= 0) {
+                        board.setSym(position, y + i, '#', color_);
+                        //board.grid[y + i][position].symbol = '#';
+                        //board.grid[y + i][position].color = color_;
+
+                    }
                 }
             }
         }
@@ -175,9 +192,11 @@ public:
                     int position = x + j;
                     if (position >= 0 && position < BOARD_WIDTH && (y + i) <
                         BOARD_HEIGHT && (y + i) >= 0)
-                    
-                        board.grid[y + i][position].symbol = '=';
-                        board.grid[y + i][position].color = color_;
+                    {
+                        board.setSym(position, y + i, '=', color_);
+                        //board.grid[y + i][position].symbol = '=';
+                        //board.grid[y + i][position].color = color_;
+                    }
                 }
             }
         }
@@ -189,9 +208,9 @@ public:
                 for (int j = 0; j < w_; ++j) {
                     int position = x + j;
                     if (position >= 0 && position < BOARD_WIDTH && (y + i) <
-                        BOARD_HEIGHT && (y + i) >= 0)
-                        board.grid[y + i][position].symbol = '=';
-                        board.grid[y + i][position].color = color_;
+                        BOARD_HEIGHT && (y + i) >= 0) {
+                        board.setSym(position, y + i, '=', color_);
+                    }
                 }
             }
         }
@@ -245,12 +264,10 @@ public:
                     if (position >= 0 && position < BOARD_WIDTH && (y + i) <
                         BOARD_HEIGHT && (y + i) >= 0)
                         if (j % 2 == 0) {
-                            board.grid[y + i][position].symbol = '*';
-                            board.grid[y + i][position].color = color_;
+                            board.setSym(position, y + i, '*', color_);
                         }
                         else {
-                            board.grid[y + i][position].symbol = ' ';
-                            //board.grid[y + i][position].color = color_;
+                            board.setSym(position, y + i, ' ', color_);
                         }
                 }
             }
@@ -265,12 +282,11 @@ public:
                     if (position >= 0 && position < BOARD_WIDTH && (y + i) <
                         BOARD_HEIGHT && (y + i) >= 0)
                         if (j % 2 == 0) {
-                            board.grid[y + i][position].symbol = '#';
-                            board.grid[y + i][position].color = color_;
+                            board.setSym(position, y + i, '#', color_);
                         }
                         else {
-                            board.grid[y + i][position].symbol = ' ';
-                            board.grid[y + i][position].color = color_;
+                            board.setSym(position, y + i, ' ', color_);
+                            
                         }
                 }
             }
@@ -323,13 +339,14 @@ public:
         for (int i = 0; i < r_; ++i) {
             int Stars = 2 * i + 1;
             int upcircle = x - i;
+
             for (int j = 0; j < Stars; ++j) {
                 if (i == 0 || i == r_ - 1 || j == 0 || j == Stars - 1) {
                     int positionUp = upcircle + j;
                     if (positionUp >= 0 && positionUp < BOARD_WIDTH && (y + i) <
-                        BOARD_HEIGHT && (y + i) >= 0)
-                        board.grid[y + i][positionUp].symbol = '*';
-                        board.grid[y + i][positionUp].color = color_;
+                        BOARD_HEIGHT && (y + i) >= 0) {
+                        board.setSym(positionUp, y + i, '*', color_);
+                    }
                 }
             }
         }
@@ -339,10 +356,11 @@ public:
             for (int j = 0; j < Stars; ++j) {
                 if (i == 0 || i == r_ - 1 || j == 0 || j == Stars - 1) {
                     int position = downcircle + j;
-                    if (position >= 0 && position < BOARD_WIDTH && (y + i) <
-                        BOARD_HEIGHT && (y + i) >= 0)
-                    board.grid[y + r_ + (i - 1)][position].symbol = '*';
-                    board.grid[y + r_ + (i - 1)][position].color = color_;
+                    int posX = y + r_ + (i - 1);
+                    if (position >= 0 && position < BOARD_WIDTH && posX <
+                        BOARD_HEIGHT && posX >= 0) {
+                        board.setSym(position, posX, '*', color_);
+                    }
                 }
             }
         }
@@ -356,10 +374,10 @@ public:
                 for (int j = 0; j < Stars; ++j) {
                     int positionUp = upcircle + j;
                     if (positionUp >= 0 && positionUp < BOARD_WIDTH && (y + i) <
-                        BOARD_HEIGHT && (y + i) >= 0)
-                    board.grid[y +i][positionUp].symbol = '*';
-                    board.grid[y + i][positionUp].color = color_;
-
+                        BOARD_HEIGHT && (y + i) >= 0) {
+                        board.setSym(positionUp, y+i, '*', color_);
+                       
+                    }
 
                 }
             }
@@ -368,11 +386,12 @@ public:
                 int downcircle = x - (r_ - 1 - i);
                 for (int j = 0; j < Stars; ++j) {
                     int positionUp = downcircle + j;
-                    if (positionUp >= 0 && positionUp < BOARD_WIDTH && (y + i) <
-                        BOARD_HEIGHT && (y + i) >= 0)
-                        board.grid[y + r_ + (i - 1)][positionUp].symbol = '*';
-                        board.grid[y + r_ + (i - 1)][positionUp].color = color_;
+                    int posY = y + r_ + (i - 1);
+                    if (positionUp >= 0 && positionUp < BOARD_WIDTH && posY <
+                        BOARD_HEIGHT && posY >= 0) {
+                        board.setSym(positionUp,posY, '*', color_);
 
+                    }
                 }
             }
         }
@@ -435,13 +454,15 @@ public:
             }
             if (current_x >= 0 && current_x < BOARD_WIDTH && current_y >= 0 && current_y < BOARD_HEIGHT)
                 if (isVertical_) {
-                    board.grid[current_y][current_x].symbol = '|';
-                    board.grid[current_y][current_x].color = color_;
+                    board.setSym(current_x, current_y, '|', color_);
+                    //board.grid[current_y][current_x].symbol = '|';
+                    //board.grid[current_y][current_x].color = color_;
 
                 }
                 else {
-                    board.grid[current_y][current_x].symbol = '-';
-                    board.grid[current_y][current_x].color = color_;
+                    board.setSym(current_x, current_y, '-', color_);
+                    //board.grid[current_y][current_x].symbol = '-';
+                    //board.grid[current_y][current_x].color = color_;
                 }
         }
     }
@@ -727,7 +748,8 @@ int main() {
                 }
                 for (int i = 0; i < BOARD_HEIGHT; ++i) {
                     for (int j = 0; j < BOARD_WIDTH; ++j) {
-                        char sym = board.grid[i][j].symbol;
+
+                        char sym = board.getSym(j,i);
                         if (sym == '\0') sym = ' ';
                         serialised += sym;
                     }
@@ -792,8 +814,9 @@ int main() {
                             if (ss.get(symbol)) {
                                 
                                 if (i < BOARD_HEIGHT && j < BOARD_WIDTH) {
-                                    board.grid[i][j].symbol = symbol;
-                                    board.grid[i][j].color = "";
+                                    board.setSym(j, i, symbol, "");
+                                    //board.grid[i][j].symbol = symbol;
+                                    //board.grid[i][j].color = "";
                                 }
                             }
                         }
