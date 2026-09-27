@@ -137,6 +137,7 @@ public :
         else if (py == y || py == y + (h_ - 1) || px == x || px == x - h_ + (2 * h_ + 1)) {
             return true;
         }
+        return false;
     }
 
 };
@@ -209,6 +210,7 @@ public:
         else if (py == y || py == y + h_ -1 || px == x || px == x + w_ - 1) {
             return true;
         }
+        return false;
     }
 };
 
@@ -454,11 +456,11 @@ public:
     }
 };
 
-Shape* createShape(std::string& name, int x, int y, int p1, int p2, std::string& mode, std::string& color) {
+static Shape* createShape(std::string& name, int x, int y, int p1, int p2, std::string& mode, std::string& color) {
     if (name == "triangle") return new Triangle(x, y, p1, p2, mode, color);
     if (name == "rectangle") return new Rectangle(x, y, p1, p2, mode, color);
-    if (name == "square") return new Square(x, p1, p2, mode, color);
-    if (name == "diamond") return new Diamond(x, p1, p2, mode, color);
+    if (name == "square") return new Square(x, p1, p1, mode, color);
+    if (name == "diamond") return new Diamond(x, p1, p1, mode, color);
     if (name == "line") return new Line(x, y, p1, true, mode, color);
     return nullptr;
 }
@@ -549,14 +551,17 @@ int main() {
             std::cin >> pa >> pb;
 
             std::cout << "Your Choice: [" << formShape << "][" << fillOrFrame << "][" << color << "][" << pa << "  " << pb << "]\n";
-
+            if (px < 0 || px >= BOARD_WIDTH || py < 0 || py >= BOARD_HEIGHT) {
+                std::cout << "Out of range";
+                break;
+            }
             Shape* newShape = createShape(formShape, px, py, pa, pb, fillOrFrame, color);
             if (newShape != nullptr) {
                 shapes.push_back(newShape);
                 std::cout << "Shapes added";
             }
             else {
-                std::cout << "Shapes added";
+                std::cout << "Shapes not added (Enter right properties)";
             }
 
             break;
@@ -595,7 +600,7 @@ int main() {
                 std::cin >> px >> py;
 
                 bool found = false;
-                for (int i = shapes.size() - 1; i >= 0; --i) {
+                for (int i = static_cast<int>(shapes.size()) - 1; i >= 0; --i) {
                     if (shapes[i]->contains(px, py)) {
                         std::cout << shapes[i]->printList();
                         selectedShape = shapes[i];
@@ -640,15 +645,15 @@ int main() {
                     std::cout << "Enter new parameters : \n";
                     int a, b;
                     std::cin >> a >> b;
-                    if (a > BOARD_WIDTH || b > BOARD_HEIGHT) {
+                    if (a<0 || a > BOARD_WIDTH || b<0 || b > BOARD_HEIGHT) {
                         std::cout << "error: shape will go out of the board";
+                        break;
                     }
                     selectedShape->updPrmtrs(a, b);
                     std::cout << "Size of box changed";
                     break;
                 }
             }
-            board.print();
             break;
         }
         case 8: {
@@ -680,8 +685,9 @@ int main() {
                     std::cout << "Enter new coordinates (x,y) : \n";
                     int x, y;
                     std::cin >> x >> y;
-                    if (x > BOARD_WIDTH || y > BOARD_HEIGHT) {
+                    if (x<0 || x > BOARD_WIDTH ||y<0 ||  y > BOARD_HEIGHT) {
                         std::cout << "error: shape will go out of the board";
+                        break;
                     }
                     selectedShape->updCoordinates(x, y);
                     board = Board();
@@ -705,13 +711,27 @@ int main() {
             std::string path;
             std::cout << "Enter filename to save ";
             std::getline(std::cin, path);
-
+           
+            board = Board();
+            for (int i = 0; i < shapes.size(); ++i) {
+                shapes[i]->draw(board);
+            }
+            
             std::ofstream outFile(path, std::ios::binary);
             if (outFile.is_open()) {
                 std::string serialised = "";
+
                 serialised += std::to_string(shapes.size()) + "\n";
-                for (int i = 0; i< shapes.size() ; ++i) {
+                for (int i = 0; i < shapes.size(); ++i) {
                     serialised += shapes[i]->serialise();
+                }
+                for (int i = 0; i < BOARD_HEIGHT; ++i) {
+                    for (int j = 0; j < BOARD_WIDTH; ++j) {
+                        char sym = board.grid[i][j].symbol;
+                        if (sym == '\0') sym = ' ';
+                        serialised += sym;
+                    }
+                    serialised += "\n";
                 }
                 outFile.write(serialised.c_str(), serialised.size());
                 outFile.close();
@@ -731,23 +751,22 @@ int main() {
 
             std::ifstream inFile(path, std::ios::binary | std::ios::ate);
             if (inFile.is_open()) {
-                std::streamsize size = inFile.tellg();
-                inFile.seekg(0, std::ios::beg);
-                std::vector<char> buffer(size);
+                std::string content((std::istreambuf_iterator<char>(inFile)), std::istreambuf_iterator<char>());
+                inFile.close();
+                std::stringstream ss(content);
 
-                if (inFile.read(buffer.data(), size)) {
-                    std::string data(buffer.data(), size);
+
+                int shapecount =0;
+                if (ss >> shapecount) {
+                    board = Board();
                     shapes.clear();
                     selectedShape = nullptr;
-                    board = Board();
-
-                    std::stringstream ss(data);
                     size_t count = 0;
                     if (ss >> count) {
                         for (size_t i = 0; i < count; ++i) {
                             std::string shapeName;
                             ss >> shapeName;
-                            int x=0, y=0, w = 0, h = 0;
+                            int x = 0, y = 0, w = 0, h = 0;
                             std::string mode, color;
                             if (shapeName == "triangle" || shapeName == "rectangle") {
                                 ss >> x >> y >> w >> h >> mode >> color;
@@ -755,20 +774,35 @@ int main() {
                             }
                             else if (shapeName == "square" || shapeName == "diamond") {
                                 ss >> x >> y >> w >> mode >> color;
-                                shapes.push_back(createShape(shapeName, x, y, w, 0,mode, color));
+                                shapes.push_back(createShape(shapeName, x, y, w, 0, mode, color));
                             }
                             else if (shapeName == "line") {
                                 int len, isVert;
                                 ss >> x >> y >> len >> isVert >> mode >> color;
                                 shapes.push_back(new Line(x, y, len, isVert, mode, color));
-                            
+
                             }
                         }
                     }
-                    for (int i = 0; i < shapes.size();++i) {
-                        shapes[i]->draw(board);
+
+                    ss.get();
+                    for (int i = 0; i < BOARD_HEIGHT; ++i) {
+                        for (int j = 0; j < BOARD_WIDTH; ++j) {
+                            char symbol;
+                            if (ss.get(symbol)) {
+                                
+                                if (i < BOARD_HEIGHT && j < BOARD_WIDTH) {
+                                    board.grid[i][j].symbol = symbol;
+                                    board.grid[i][j].color = "";
+                                }
+                            }
+                        }
+                        char newLine;
+                        ss.get(newLine);
                     }
-                    std::cout << " std::cout << [Success] Document loaded\n";
+                   
+                
+                    std::cout << "[Success] Document loaded\n";
                 }
                 inFile.close();
             }
