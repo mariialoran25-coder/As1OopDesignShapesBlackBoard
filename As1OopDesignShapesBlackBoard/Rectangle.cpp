@@ -14,8 +14,10 @@ Rectangle::Rectangle(int xx, int yy, int w, int h, std::string mode, std::string
         y = newY;
     }
     void Rectangle::setColor(const std::string& newColor) { color_ = newColor; }
+    
     std::string Rectangle::serialise() {
-        return "rectangle " + std::to_string(x) + " " + std::to_string(y) + " " + std::to_string(w_) + " " + std::to_string(h_) + " " + mode_ + " " + color_ + "\n";
+        std::string setColor = color_.empty() ? "none" : color_;
+        return "rectangle " + std::to_string(x) + " " + std::to_string(y) + " " + std::to_string(w_) + " " + std::to_string(h_) + " " + mode_ + " " + setColor + "\n";
     }
     void Rectangle::framedraw(Board& board) {
         for (int i = 0; i < h_; ++i) {

@@ -14,7 +14,8 @@ void  Triangle::updCoordinates(int newX, int newY)  {
 }
 void  Triangle::setColor(const std::string& newColor) { color_ = newColor; }
 std::string  Triangle::serialise()  {
-    return "triangle " + std::to_string(x) + " " + std::to_string(y) + " " + std::to_string(w_) + " " + std::to_string(h_) + " " + mode_ + " " + color_ + "\n";
+    std::string setColor = color_.empty() ? "none" : color_;
+    return "triangle " + std::to_string(x) + " " + std::to_string(y) + " " + std::to_string(w_) + " " + std::to_string(h_) + " " + mode_ + " " + setColor + "\n";
 }
 void  Triangle::framedraw(Board& board) {
     for (int i = 0; i < h_; ++i) {
@@ -52,15 +53,21 @@ void  Triangle::draw(Board& board)
     }
 }
 bool  Triangle::contains(int px, int py) {
-    if (px < x || py < y || px >= (x - h_) + 2 * h_ + 1 || py >= y + h_) {
+    if (py < y ||  py >= y + h_) {
+        return false;
+    }
+
+    int i = py - y;
+    int left = x - i;
+    int right = x + i;
+
+    if (px< left || px > right) {
         return false;
     }
 
     if (mode_ == "fill") {
         return true;
     }
-    else if (py == y || py == y + (h_ - 1) || px == x || px == x - h_ + (2 * h_ + 1)) {
-        return true;
-    }
-    return false;
+    return (i == 0 || i == h_ - 1 || px == left || px == right);
+       
 };

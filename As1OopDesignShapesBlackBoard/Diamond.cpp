@@ -13,7 +13,8 @@ void Diamond::updCoordinates(int newX, int newY) {
 }
 void Diamond::setColor(const std::string& newColor) { color_ = newColor; }
 std::string Diamond::serialise() {
-    return "diamond " + std::to_string(x) + " " + std::to_string(y) + " " + std::to_string(r_) + " " + mode_ + " " + color_ + "\n";
+    std::string setColor = color_.empty() ? "none" : color_;
+    return "diamond " + std::to_string(x) + " " + std::to_string(y) + " " + std::to_string(r_) + " " + mode_ + " " + setColor + "\n";
 }
 void Diamond::framedraw(Board& board)  {
     for (int i = 0; i < r_; ++i) {

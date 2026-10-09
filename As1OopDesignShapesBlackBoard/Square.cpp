@@ -13,7 +13,8 @@ Square::Square(int xx, int yy, int r, std::string mode, std::string color) : r_(
     }
     void Square::setColor(const std::string& newColor) { color_ = newColor; }
     std::string Square::serialise()  {
-        return "square " + std::to_string(x) + " " + std::to_string(y) + " " + std::to_string(r_) + " " + mode_ + " " + color_ + "\n";
+        std::string setColor = color_.empty() ? "none" : color_;
+        return "square " + std::to_string(x) + " " + std::to_string(y) + " " + std::to_string(r_) + " " + mode_ + " " + setColor + "\n";
     }
     void Square::framedraw(Board& board)  {
         for (int i = 0; i < r_; ++i) {

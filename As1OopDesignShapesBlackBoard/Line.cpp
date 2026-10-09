@@ -19,7 +19,8 @@ Line::Line(int xx, int yy, int length, bool isVertical, std::string mode, std::s
     void Line::setColor(const std::string& newColor) { color_ = newColor; }
 
     std::string Line::serialise()  {
-        return "line " + std::to_string(x) + " " + std::to_string(y) + " " + std::to_string(length_) + " " + std::to_string(isVertical_) + " " + mode_ + " " + color_ + "\n";
+        std::string setColor = color_.empty() ? "none" : color_;
+        return "line " + std::to_string(x) + " " + std::to_string(y) + " " + std::to_string(length_) + " " + std::to_string(isVertical_) + " " + mode_ + " " + setColor + "\n";
     }
     void Line::draw(Board& board) 
     {

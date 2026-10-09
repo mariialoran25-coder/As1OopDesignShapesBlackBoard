@@ -64,22 +64,22 @@ ConsoleMenu::ConsoleMenu() {}
     Shape* ConsoleMenu::createShape(std::string& name, int x, int y, int p1, int p2, std::string& mode, std::string& color) {
     if (name == "triangle") return new Triangle(x, y, p1, p2, mode, color);
     if (name == "rectangle") return new Rectangle(x, y, p1, p2, mode, color);
-    if (name == "square") return new Square(x, p1, p1, mode, color);
-    if (name == "diamond") return new Diamond(x, p1, p1, mode, color);
-    if (name == "line") return new Line(x, y, p1, true, mode, color);
+    if (name == "square") return new Square(x, y, p1, mode, color);
+    if (name == "diamond") return new Diamond(x, y, p1, mode, color);
+    if (name == "line") return new Line(x, y, p1, p2, mode, color);
     return nullptr;
 }
 void ConsoleMenu::createdShapes() {
-    shapes.push_back(new Triangle(8, 2, 1, 5, "fill", ""));
-    shapes.push_back(new Rectangle(20, 2, 9, 4, "fill", ""));
-    shapes.push_back(new Diamond(25, 8, 5, "fill", "pink"));
-    shapes.push_back(new Square(5, 10, 5, "fill", "pink"));
-    shapes.push_back(new Line(1, 1, 5, true, "fill", "pink"));
+    shapes.push_back(std::make_unique<Triangle>(8, 2, 1, 5, "fill", ""));
+    shapes.push_back(std::make_unique<Rectangle>(20, 2, 9, 4, "fill", ""));
+    shapes.push_back(std::make_unique<Diamond>(25, 8, 5, "fill", "pink"));
+    shapes.push_back(std::make_unique<Square>(5, 10, 5, "fill", "pink"));
+    shapes.push_back(std::make_unique<Line>(1, 1, 5, true, "fill", "pink"));
 }
 
 void ConsoleMenu::Draw1(Board& board) {
     board = Board();
-    for (int i = 0; i < shapes.size();++i) {
+    for (int i = 0; i < shapess.size();++i) {
         shapes[i]->draw(board);
     }
     board.print();
@@ -154,7 +154,7 @@ void ConsoleMenu::Add4() {
     }
     Shape* newShape = createShape(formShape, px, py, pa, pb, fillOrFrame, color);
     if (newShape != nullptr) {
-        shapes.push_back(newShape);
+        shapes.push_back(std::unique_ptr<Shape>(newShape));
         std::cout << "Shapes added";
     }
     else {
@@ -189,7 +189,7 @@ void ConsoleMenu::Select5() {
         for (int i = 0; i < shapes.size();++i) {
             if (i + 1 == id) {
                 std::cout << "[" << (i + 1) << "]" << shapes[i]->printList();
-                selectedShape = shapes[i];
+                selectedShape = shapes[i].get();
                 std::cout << "Shapes are found!\n";
                 idFound = true;
                 break;
@@ -209,7 +209,7 @@ void ConsoleMenu::Select5() {
         for (int i = static_cast<int>(shapes.size()) - 1; i >= 0; --i) {
             if (shapes[i]->contains(px, py)) {
                 std::cout << shapes[i]->printList();
-                selectedShape = shapes[i];
+                selectedShape = shapes[i].get();
                 std::cout << "Shapes are found!";
                 found = true;
                 return;
@@ -230,11 +230,10 @@ void ConsoleMenu::Remove6() {
     }
 
     for (int i = 0; i < shapes.size();++i) {
-        if (shapes[i] == selectedShape) {
+        if (shapes[i].get() == selectedShape) {
             shapes.erase(shapes.begin() + i);
             selectedShape = nullptr;
             std::cout << "Shape is removed";
-
             board = Board();
             return;
         }
@@ -248,7 +247,7 @@ void ConsoleMenu::Edit7() {
         return;
     }
     for (int i = 0; i < shapes.size();++i) {
-        if (shapes[i] == selectedShape) {
+        if (shapes[i].get() == selectedShape) {
             std::cout << "Enter new parameters : \n";
             int a, b;
             if (!(std::cin >> a >> b)) {
@@ -275,7 +274,7 @@ void ConsoleMenu::Paint8() {
         return;
     }
     for (int i = 0; i < shapes.size();++i) {
-        if (shapes[i] == selectedShape) {
+        if (shapes[i].get() == selectedShape) {
             std::cout << "What color do you want? : \n";
             std::string color;
             if (!(std::cin >> color)) {
@@ -299,7 +298,7 @@ void ConsoleMenu::Move9() {
     }
 
     for (int i = 0; i < shapes.size();++i) {
-        if (shapes[i] == selectedShape) {
+        if (shapes[i].get() == selectedShape) {
             std::cout << "Enter new coordinates (x,y) : \n";
             int x, y;
             if (!(std::cin >> x >> y)) {
@@ -374,7 +373,7 @@ void ConsoleMenu::Load12() {
     std::cout << "Enter filename to load ";
     std::getline(std::cin, path);
 
-    std::ifstream inFile(path, std::ios::binary | std::ios::ate);
+    std::ifstream inFile(path, std::ios::binary);
     if (inFile.is_open()) {
         std::string content((std::istreambuf_iterator<char>(inFile)), std::istreambuf_iterator<char>());
         inFile.close();
@@ -386,28 +385,31 @@ void ConsoleMenu::Load12() {
             board = Board();
             shapes.clear();
             selectedShape = nullptr;
-            size_t count = 0;
-            if (ss >> count) {
-                for (size_t i = 0; i < count; ++i) {
-                    std::string shapeName;
-                    ss >> shapeName;
-                    int x = 0, y = 0, w = 0, h = 0;
-                    std::string mode, color;
-                    if (shapeName == "triangle" || shapeName == "rectangle") {
-                        ss >> x >> y >> w >> h >> mode >> color;
-                        shapes.push_back(createShape(shapeName, x, y, w, h, mode, color));
-                    }
-                    else if (shapeName == "square" || shapeName == "diamond") {
-                        ss >> x >> y >> w >> mode >> color;
-                        shapes.push_back(createShape(shapeName, x, y, w, 0, mode, color));
-                    }
-                    else if (shapeName == "line") {
-                        int len, isVert;
-                        ss >> x >> y >> len >> isVert >> mode >> color;
-                        shapes.push_back(new Line(x, y, len, isVert, mode, color));
+          
+            for (size_t i = 0; i < shapecount; ++i) {
+                std::string shapeName;
+                if (!(ss >> shapeName)) break;
+                int x = 0, y = 0, w = 0, h = 0;
+                std::string mode, color;
 
-                    }
+                if (shapeName == "triangle" || shapeName == "rectangle") {
+                    ss >> x >> y >> w >> h >> mode >> color;
+                    if (color == "none") color = "";
+                    shapes.push_back(std::unique_ptr<Shape>(createShape(shapeName, x, y, w, h, mode, color)));
                 }
+                else if (shapeName == "square" || shapeName == "diamond") {
+                    ss >> x >> y >> w >> mode >> color;
+                    if (color == "none") color = "";
+                    shapes.push_back(std::unique_ptr<Shape>(createShape(shapeName, x, y, w, 0, mode, color)));
+                }
+                else if (shapeName == "line") {
+                    int len, isVert;
+                    ss >> x >> y >> len >> isVert >> mode >> color;
+                    if (color == "none") color = "";
+                    shapes.push_back(std::make_unique<Line>(x, y, len, isVert, mode, color));
+
+                }
+                
             }
 
             ss.get();
@@ -424,11 +426,13 @@ void ConsoleMenu::Load12() {
                 char newLine;
                 ss.get(newLine);
             }
-
-
             std::cout << "[Success] Document loaded\n";
         }
-        inFile.close();
+        else
+        {
+            std::cout << "[Error] Failed to read shape count \n";
+        }
+        //inFile.close();
     }
     else {
         std::cout << "[Error] File not opening \n";
