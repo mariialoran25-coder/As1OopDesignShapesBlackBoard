@@ -6,7 +6,7 @@ private:
     std::vector<std::unique_ptr<Shape>> shapes;
     Board board;
     Shape* selectedShape = nullptr;
-    static Shape* createShape(std::string& name, int x, int y, int p1, int p2, std::string& mode, std::string& color);
+    std::unique_ptr<Shape> createShape(const std::string& shapeName, std::istream& in);
 public:
     ConsoleMenu();
     void run();

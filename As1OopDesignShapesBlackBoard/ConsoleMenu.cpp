@@ -1,13 +1,14 @@
 #include "ConsoleMenu.h"
-#include "Shape.h"
 #include "Board.h"
+#include <sstream>
+#include <fstream>
+#include "Shape.h"
+
 #include "Triangle.h"
 #include "Diamond.h"
 #include "Square.h"
-#include "Line.h"
 #include "Rectangle.h"
-#include <sstream>
-#include <fstream>
+#include "Line.h"
 
 
 ConsoleMenu::ConsoleMenu() {}
@@ -61,13 +62,38 @@ ConsoleMenu::ConsoleMenu() {}
         }
     }
 
-    Shape* ConsoleMenu::createShape(std::string& name, int x, int y, int p1, int p2, std::string& mode, std::string& color) {
-    if (name == "triangle") return new Triangle(x, y, p1, p2, mode, color);
-    if (name == "rectangle") return new Rectangle(x, y, p1, p2, mode, color);
-    if (name == "square") return new Square(x, y, p1, mode, color);
-    if (name == "diamond") return new Diamond(x, y, p1, mode, color);
-    if (name == "line") return new Line(x, y, p1, p2, mode, color);
-    return nullptr;
+    std::unique_ptr<Shape> ConsoleMenu::createShape(const std::string& shapeName, std::istream& in){
+        int x = 0, y = 0, w = 0, h = 0;
+        std::string mode, color;
+        int isVert = 0;
+
+        if (shapeName == "triangle" || shapeName == "rectangle") {
+            if (!(in >> x >> y >> w >> h >> mode >> color)) {
+                return nullptr;
+            }
+        }
+        else if (shapeName == "square" || shapeName == "diamond") {
+            if (!(in >> x >> y >> w >> mode >> color)) {
+                return nullptr;
+            }
+        }
+        else if (shapeName == "line") {
+            if (!(in >> x >> y >> w >> isVert >> mode >> color)) {
+                return nullptr;
+            }
+        }
+        else {
+            return nullptr;
+        }
+        if (color == "none" || color == "NONE") {
+            color = "";
+        }
+        if (shapeName == "triangle") return std::make_unique<Triangle>(x, y, w, h, mode, color);
+        if (shapeName == "rectangle") return std::make_unique<Rectangle>(x, y, w, h, mode, color);
+        if (shapeName == "square") return std::make_unique<Square>(x, y, w, mode, color);
+        if (shapeName == "diamond") return std::make_unique<Diamond>(x, y, w, mode, color);
+        if (shapeName == "line") return std::make_unique<Line>(x, y, w, isVert, mode, color);
+        return nullptr;
 }
 void ConsoleMenu::createdShapes() {
     shapes.push_back(std::make_unique<Triangle>(8, 2, 1, 5, "fill", ""));
@@ -79,7 +105,7 @@ void ConsoleMenu::createdShapes() {
 
 void ConsoleMenu::Draw1(Board& board) {
     board = Board();
-    for (int i = 0; i < shapess.size();++i) {
+    for (int i = 0; i < shapes.size();++i) {
         shapes[i]->draw(board);
     }
     board.print();
@@ -100,61 +126,17 @@ void ConsoleMenu::Shapes3() {
 }
 void ConsoleMenu::Add4() {
     std::string formShape;
-    std::string fillOrFrame;
-    std::string color;
-    int px, py;
-    int pa, pb;
     std::cout << "----ADD----\n";
-    std::cout << "Enter Shape: ";
+    std::cout << "Enter Shape ,x,y,w,h?,mode,color : ";
     if (!(std::cin >> formShape)) {
         std::cout << "Error: Enter again";
         std::cin.clear();
         std::cin.ignore(1000, '\n');
         return;
     }
-
-
-
-    std::cout << "Enter Fill or Frame: ";
-    if (!(std::cin >> fillOrFrame)) {
-        std::cout << "Error: Enter again";
-        std::cin.clear();
-        std::cin.ignore(1000, '\n');
-        return;
-    }
-
-    std::cout << "Enter Color: ";
-    if (!(std::cin >> color)) {
-        std::cout << "Error: Enter again color";
-        std::cin.clear();
-        std::cin.ignore(1000, '\n');
-        return;
-    }
-
-    std::cout << "Enter Location ('number1 x' 'num2 y'): ";
-    if (!(std::cin >> px >> py)) {
-        std::cout << "Enter 2 parametrs (numbers)";
-        std::cin.clear();
-        std::cin.ignore(1000, '\n');
-        return;
-    }
-
-    std::cout << "Enter Parameters : ";
-    if (!(std::cin >> pa >> pb)) {
-        std::cout << "Enter 2 parametrs (numbers)";
-        std::cin.clear();
-        std::cin.ignore(1000, '\n');
-        return;
-    }
-
-    std::cout << "Your Choice: [" << formShape << "][" << fillOrFrame << "][" << color << "][" << pa << "  " << pb << "]\n";
-    if (px < 0 || px >= BOARD_WIDTH || py < 0 || py >= BOARD_HEIGHT) {
-        std::cout << "Out of range";
-        return;
-    }
-    Shape* newShape = createShape(formShape, px, py, pa, pb, fillOrFrame, color);
-    if (newShape != nullptr) {
-        shapes.push_back(std::unique_ptr<Shape>(newShape));
+    auto s = createShape(formShape, std::cin);
+    if (s != nullptr) {
+        shapes.push_back(std::move (s));
         std::cout << "Shapes added";
     }
     else {
@@ -379,7 +361,7 @@ void ConsoleMenu::Load12() {
         inFile.close();
         std::stringstream ss(content);
 
-
+        
         int shapecount = 0;
         if (ss >> shapecount) {
             board = Board();
@@ -389,27 +371,10 @@ void ConsoleMenu::Load12() {
             for (size_t i = 0; i < shapecount; ++i) {
                 std::string shapeName;
                 if (!(ss >> shapeName)) break;
-                int x = 0, y = 0, w = 0, h = 0;
-                std::string mode, color;
-
-                if (shapeName == "triangle" || shapeName == "rectangle") {
-                    ss >> x >> y >> w >> h >> mode >> color;
-                    if (color == "none") color = "";
-                    shapes.push_back(std::unique_ptr<Shape>(createShape(shapeName, x, y, w, h, mode, color)));
+                auto s = createShape(shapeName, ss);
+                if (s != nullptr) {
+                    shapes.push_back(std::move(s));
                 }
-                else if (shapeName == "square" || shapeName == "diamond") {
-                    ss >> x >> y >> w >> mode >> color;
-                    if (color == "none") color = "";
-                    shapes.push_back(std::unique_ptr<Shape>(createShape(shapeName, x, y, w, 0, mode, color)));
-                }
-                else if (shapeName == "line") {
-                    int len, isVert;
-                    ss >> x >> y >> len >> isVert >> mode >> color;
-                    if (color == "none") color = "";
-                    shapes.push_back(std::make_unique<Line>(x, y, len, isVert, mode, color));
-
-                }
-                
             }
 
             ss.get();
@@ -417,7 +382,6 @@ void ConsoleMenu::Load12() {
                 for (int j = 0; j < BOARD_WIDTH; ++j) {
                     char symbol;
                     if (ss.get(symbol)) {
-
                         if (i < BOARD_HEIGHT && j < BOARD_WIDTH) {
                             board.setSym(j, i, symbol, "");
                         }
@@ -428,14 +392,12 @@ void ConsoleMenu::Load12() {
             }
             std::cout << "[Success] Document loaded\n";
         }
-        else
-        {
+        else{
             std::cout << "[Error] Failed to read shape count \n";
         }
-        //inFile.close();
     }
     else {
         std::cout << "[Error] File not opening \n";
     }
-};
+}
 
